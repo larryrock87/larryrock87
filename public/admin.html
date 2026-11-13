@@ -8,134 +8,12 @@
   <title>Administración · Festival de la Voz</title>
   <link rel="icon" href="/img/favicon.png">
   <link rel="stylesheet" href="/css/theme.css">
-  <style>
-    body { font-size: 15px; }
-    .wrap { width: min(1320px, 100%); margin: 0 auto; padding: 0 16px 60px; }
-    input, select, textarea { font: inherit; color: #fff; background: rgba(5,12,27,.6); border: 1px solid rgba(214,178,94,.3); border-radius: 12px; padding: 10px 12px; outline: none; width: 100%; }
-    input:focus, select:focus { border-color: var(--gold-300); box-shadow: 0 0 0 3px rgba(214,178,94,.15); }
-    label { display: block; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-300); font-weight: 700; margin: 0 0 6px; }
-    h2 { font-family: var(--font-display); color: var(--gold-200); margin: 0 0 14px; font-size: 1.15rem; letter-spacing: .05em; display: flex; align-items: center; gap: 10px; }
-    h2 .muted { font-family: var(--font-body); font-size: .8rem; color: var(--silver-500); letter-spacing: 0; font-weight: 500; }
-    .muted { color: var(--silver-500); }
-    .card { padding: 20px; margin-bottom: 18px; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .grow { flex: 1; min-width: 0; }
-
-    /* login */
-    #login { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
-    #login form { width: min(380px, 100%); padding: 32px 28px; text-align: center; }
-    #login img { width: 130px; margin: 0 auto 16px; border-radius: 50%; }
-    #login h1 { font-size: 1.25rem; margin: 0 0 4px; }
-    #login p { color: var(--silver-300); margin: 0 0 20px; font-size: .9rem; }
-    #login .btn { width: 100%; margin-top: 14px; }
-
-    /* header */
-    header.top { display: flex; align-items: center; gap: 14px; padding: 16px 0; flex-wrap: wrap; }
-    header.top img { width: 58px; height: 58px; border-radius: 50%; }
-    header.top h1 { font-size: 1.15rem; margin: 0; line-height: 1.2; }
-    header.top .sub { font-size: .72rem; letter-spacing: .25em; color: var(--silver-300); font-weight: 700; }
-    header.top .links { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
-    nav.tabs { display: flex; gap: 6px; padding: 6px; border-radius: 999px; background: rgba(5,12,27,.6); box-shadow: inset 0 0 0 1px rgba(214,178,94,.25); margin-bottom: 18px; overflow-x: auto; }
-    nav.tabs button { flex: 1; border: 0; background: transparent; color: var(--silver-300); padding: 10px 16px; border-radius: 999px; font-weight: 700; letter-spacing: .06em; white-space: nowrap; }
-    nav.tabs button.on { background: var(--gold-grad); color: #2a1d02; }
-    .tab { display: none; } .tab.on { display: block; animation: fade .3s; }
-    @keyframes fade { from { opacity: 0; transform: translateY(6px); } }
-    .cols { display: grid; grid-template-columns: 1fr; gap: 18px; }
-    @media (min-width: 980px) { .cols { grid-template-columns: 1.05fr .95fr; } }
-    .cols > div > .card:last-child { margin-bottom: 0; }
-
-    /* estado */
-    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-weight: 800; font-size: .74rem; letter-spacing: .14em; }
-    .pill i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
-    .pill.open { color: #7dffb8; background: rgba(60,207,142,.12); } .pill.open i { animation: pl 1.2s infinite; }
-    .pill.closed { color: #ff9aa4; background: rgba(255,93,108,.12); }
-    .pill.idle { color: var(--silver-300); background: rgba(255,255,255,.07); }
-    .pill.scheduled { color: var(--ve-yellow); background: rgba(255,204,0,.1); }
-    @keyframes pl { 50% { opacity: .3; } }
-    .bigclock { font-family: var(--font-display); font-size: 3rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; margin: 14px 0 4px; }
-    .presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; margin: 10px 0; }
-    .presets button { border: 0; padding: 12px 6px; border-radius: 12px; background: rgba(214,178,94,.1); color: var(--gold-200); font-weight: 800; box-shadow: inset 0 0 0 1px rgba(214,178,94,.35); }
-    .presets button.on { background: var(--gold-grad); color: #2a1d02; }
-    .sep { border: 0; height: 1px; background: rgba(214,178,94,.2); margin: 18px 0; }
-    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
-    .kpi { padding: 12px; border-radius: 14px; background: rgba(5,12,27,.5); text-align: center; }
-    .kpi b { display: block; font-family: var(--font-display); font-size: 1.7rem; color: var(--gold-200); }
-    .kpi span { font-size: .68rem; letter-spacing: .14em; color: var(--silver-300); font-weight: 700; }
-
-    /* modos de pantalla */
-    .modes { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
-    .modes button { border: 0; border-radius: 16px; padding: 14px 10px; background: rgba(5,12,27,.55); color: var(--silver-100); box-shadow: inset 0 0 0 1px rgba(214,178,94,.3); text-align: center; transition: .2s; }
-    .modes button .ic { font-size: 1.6rem; display: block; margin-bottom: 4px; }
-    .modes button b { display: block; font-size: .82rem; letter-spacing: .06em; }
-    .modes button small { color: var(--silver-500); font-size: .7rem; }
-    .modes button.on { background: var(--gold-grad); color: #2a1d02; box-shadow: 0 0 24px rgba(214,178,94,.45); }
-    .modes button.on small { color: #4a3708; }
-    .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 600; }
-    .switch input { display: none; }
-    .switch span { width: 46px; height: 26px; border-radius: 999px; background: rgba(255,255,255,.15); position: relative; transition: .2s; flex: none; }
-    .switch span::after { content: ''; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: .2s; }
-    .switch input:checked + span { background: var(--gold-400); }
-    .switch input:checked + span::after { left: 23px; }
-
-    /* ranking */
-    .rank { display: grid; gap: 8px; }
-    .rk { display: grid; grid-template-columns: 28px 44px 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 14px; background: rgba(5,12,27,.45); }
-    .rk .pos { font-family: var(--font-display); font-weight: 900; color: var(--gold-200); text-align: center; }
-    .rk .av { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 2px rgba(214,178,94,.6); }
-    .rk .av img, .rk .av .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: .9rem; }
-    .rk .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .rk .nm small { color: var(--gold-300); font-weight: 600; margin-right: 6px; }
-    .rk .bar { height: 8px; border-radius: 8px; background: rgba(255,255,255,.07); overflow: hidden; margin-top: 6px; }
-    .rk .bar div { height: 100%; background: var(--gold-grad); transition: width .8s cubic-bezier(.25,.9,.25,1); }
-    .rk .v { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
-    .rk .v small { display: block; color: var(--silver-300); font-weight: 600; font-size: .75rem; }
-    .rk .adj-note { color: var(--ve-yellow); font-size: .7rem; font-weight: 700; }
-    .rk .ctrl { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding-top: 6px; border-top: 1px dashed rgba(214,178,94,.2); }
-    .rk .ctrl button { border: 0; border-radius: 10px; padding: 7px 11px; font-weight: 800; background: rgba(214,178,94,.12); color: var(--gold-200); box-shadow: inset 0 0 0 1px rgba(214,178,94,.35); }
-    .rk .ctrl button.neg { color: #ff9aa4; background: rgba(255,93,108,.08); box-shadow: inset 0 0 0 1px rgba(255,93,108,.35); }
-    .rk .ctrl input { width: 90px; padding: 7px 10px; }
-    .rk .ctrl .info { margin-left: auto; font-size: .76rem; color: var(--silver-300); }
-    .audit { max-height: 240px; overflow: auto; font-size: .82rem; color: var(--silver-300); display: grid; gap: 6px; }
-    .audit div { padding: 6px 10px; border-left: 2px solid var(--gold-500); background: rgba(5,12,27,.4); border-radius: 0 8px 8px 0; }
-
-    /* participantes */
-    .pform { display: grid; grid-template-columns: 150px 1fr; gap: 16px; align-items: start; }
-    @media (max-width: 600px) { .pform { grid-template-columns: 1fr; } }
-    .drop { width: 150px; aspect-ratio: 3/4; border-radius: 16px; border: 2px dashed rgba(214,178,94,.5); display: grid; place-items: center; text-align: center; color: var(--gold-200); cursor: pointer; overflow: hidden; position: relative; background: rgba(5,12,27,.5); font-size: .8rem; padding: 8px; }
-    .drop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .drop.over { border-color: var(--ve-yellow); background: rgba(255,204,0,.08); }
-    .fields { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
-    .fields .full { grid-column: 1 / -1; }
-    .plist { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
-    .pi { border-radius: 16px; overflow: hidden; background: var(--navy-800); box-shadow: var(--shadow-gold); position: relative; }
-    .pi .ph { aspect-ratio: 3/4; }
-    .pi .ph img, .pi .ph .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 2.4rem; }
-    .pi .no { position: absolute; top: 8px; left: 8px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-grad); color: #2a1d02; font-weight: 900; font-family: var(--font-display); }
-    .pi .meta { padding: 10px 12px; }
-    .pi .meta .g { font-size: .66rem; letter-spacing: .12em; color: var(--gold-300); font-weight: 700; text-transform: uppercase; }
-    .pi .meta .n { font-weight: 700; line-height: 1.2; }
-    .pi .acts { display: flex; gap: 4px; padding: 0 8px 10px; }
-    .pi .acts button { flex: 1; border: 0; border-radius: 10px; padding: 8px 4px; background: rgba(214,178,94,.1); color: var(--gold-200); font-weight: 700; font-size: .8rem; }
-    .pi .acts button.del { color: #ff9aa4; background: rgba(255,93,108,.1); }
-
-    /* QR */
-    .qrbox { display: grid; grid-template-columns: 200px 1fr; gap: 18px; align-items: center; }
-    @media (max-width: 600px) { .qrbox { grid-template-columns: 1fr; } }
-    .qrbox img { width: 200px; height: 200px; background: #fff; padding: 10px; border-radius: 16px; box-shadow: 0 0 0 3px var(--gold-400); }
-    .urls { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-    .urls button { border: 0; border-radius: 999px; padding: 6px 12px; font-size: .78rem; background: rgba(27,63,155,.35); color: #cfe0ff; font-weight: 600; }
-    code { background: rgba(5,12,27,.6); padding: 2px 8px; border-radius: 6px; color: var(--gold-200); word-break: break-all; }
-
-    .modal { position: fixed; inset: 0; z-index: 70; display: none; place-items: center; padding: 16px; background: rgba(3,8,18,.8); backdrop-filter: blur(6px); }
-    .modal.show { display: grid; }
-    .modal .box { width: min(420px, 100%); padding: 24px; }
-    .modal .box p { color: var(--silver-300); }
-  </style>
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
   <div class="stage-bg"></div>
 
-  <!-- LOGIN -->
+  <!-- INGRESO -->
   <section id="login">
     <form class="panel" id="loginForm">
       <img src="/img/logo-256.webp" alt="">
@@ -147,439 +25,312 @@
     </form>
   </section>
 
-  <!-- APP -->
   <div class="wrap" id="app" hidden>
     <header class="top">
       <img src="/img/logo-256.webp" alt="">
       <div>
         <h1 class="display gold-text" id="hTitle">Festival de la Voz</h1>
-        <div class="sub">PANEL DE CONTROL</div>
+        <div class="sub">PANEL DEL ADMINISTRADOR</div>
       </div>
       <div class="links">
-        <a class="btn blue sm" id="openScreen" target="_blank" rel="noopener">📺 Abrir pantalla de gala</a>
-        <a class="btn ghost sm" href="/" target="_blank" rel="noopener">📱 Ver página pública</a>
+        <a class="btn blue sm" id="openScreen" target="_blank" rel="noopener">📺 Pantalla de gala</a>
+        <a class="btn ghost sm" href="/jurado" target="_blank" rel="noopener">⚖️ Sala del jurado</a>
+        <a class="btn ghost sm" href="/" target="_blank" rel="noopener">📱 Página pública</a>
         <button class="btn ghost sm" id="logout">Salir</button>
       </div>
     </header>
 
-    <nav class="tabs">
-      <button data-tab="panel" class="on">🎛️ Control en vivo</button>
+    <nav class="tabs" id="tabs">
+      <button data-tab="panel" class="on">🎛️ En vivo</button>
       <button data-tab="participantes">🎤 Participantes <span id="pCount"></span></button>
-      <button data-tab="resultados">📊 Resultados y ajustes</button>
-      <button data-tab="ajustes">⚙️ QR y configuración</button>
+      <button data-tab="jurado">⚖️ Jurado <span id="jBadge"></span></button>
+      <button data-tab="audiencia">★ Voz de la Audiencia</button>
+      <button data-tab="comunidad">💬 Comunidad <span id="cBadge"></span></button>
+      <button data-tab="pagina">🌐 Página y QR</button>
+      <button data-tab="historial">📜 Historial</button>
     </nav>
 
-    <!-- CONTROL -->
+    <!-- ===================== EN VIVO ===================== -->
     <section class="tab on" id="tab-panel">
       <div class="cols">
         <div>
           <div class="card panel">
-            <h2>Votación <span id="statusPill"></span></h2>
+            <h2>Pantalla de gala <span class="muted">— lo que se proyecta en el evento</span></h2>
+            <div class="modes" id="modes">
+              <button data-mode="espera"><span class="ic">🔳</span><b>QR / Espera</b><small>Invitación a votar</small></button>
+              <button data-mode="participantes"><span class="ic">🎤</span><b>Participantes</b><small>Galería</small></button>
+              <button data-mode="video"><span class="ic">🎬</span><b>Video</b><small>Video de inicio</small></button>
+              <button data-mode="homenaje"><span class="ic">🕯️</span><b>Homenaje</b><small>In memoriam</small></button>
+              <button data-mode="vivo"><span class="ic">📊</span><b>Audiencia en vivo</b><small>Barras y %</small></button>
+              <button data-mode="ganador"><span class="ic">★</span><b>Voz de la Audiencia</b><small>Revela al ganador</small></button>
+              <button data-mode="podio"><span class="ic">🥇</span><b>Podio audiencia</b><small>Top 3 del público</small></button>
+            </div>
+            <div class="row" style="margin-top:14px; justify-content:space-between">
+              <label class="switch"><input type="checkbox" id="showCounts"><span></span>Mostrar cantidad de votos</label>
+              <button class="btn ghost sm" id="replay">↻ Repetir animación</button>
+            </div>
+            <hr class="sep">
+            <h3 class="h3">🏆 Premiación del jurado</h3>
+            <p class="muted small" id="awardNote"></p>
+            <div class="awards" id="awards">
+              <button data-step="3"><b>3.er</b><small>Tercer lugar</small></button>
+              <button data-step="2"><b>2.º</b><small>Segundo lugar</small></button>
+              <button data-step="1"><b>1.er</b><small>Primer lugar</small></button>
+              <button data-step="0"><b>🏆</b><small>Podio completo</small></button>
+            </div>
+          </div>
+          <div class="card panel">
+            <h2>Voz de la Audiencia <span id="statusPill"></span></h2>
             <div id="votingInfo"></div>
             <div id="votingCtrls"></div>
             <div class="kpis">
               <div class="kpi"><b id="kTotal">0</b><span>VOTOS</span></div>
               <div class="kpi"><b id="kVoters">0</b><span>VOTANTES</span></div>
-              <div class="kpi"><b id="kPart">0</b><span>PARTICIPANTES</span></div>
-            </div>
-          </div>
-          <div class="card panel">
-            <h2>Pantalla de gala <span class="muted">— lo que ve el público en el proyector</span></h2>
-            <div class="modes" id="modes">
-              <button data-mode="espera"><span class="ic">🔳</span><b>QR / Espera</b><small>Invitación a votar</small></button>
-              <button data-mode="participantes"><span class="ic">🎤</span><b>Participantes</b><small>Galería de fotos</small></button>
-              <button data-mode="vivo"><span class="ic">📊</span><b>En vivo</b><small>Barras y porcentajes</small></button>
-              <button data-mode="ganador"><span class="ic">🏆</span><b>Ganador</b><small>Revelación con redoble</small></button>
-              <button data-mode="podio"><span class="ic">🥇</span><b>Podio</b><small>Top 3</small></button>
-            </div>
-            <div class="row" style="margin-top:14px; justify-content:space-between">
-              <label class="switch" style="margin:0;text-transform:none;letter-spacing:0;color:var(--silver-100);font-size:.9rem"><input type="checkbox" id="showCounts"><span></span>Mostrar cantidad de votos en pantalla</label>
-              <button class="btn ghost sm" id="replay">↻ Repetir revelación</button>
+              <div class="kpi"><b id="kLikes">0</b><span>ME GUSTA</span></div>
             </div>
           </div>
         </div>
         <div>
           <div class="card panel">
-            <h2>Resultados en tiempo real <span class="muted" id="liveNote"></span></h2>
+            <h2>Sala del jurado <span id="jStatusPill"></span></h2>
+            <div id="jMini"></div>
+          </div>
+          <div class="card panel">
+            <h2>Voz de la Audiencia en vivo <span class="muted" id="liveNote"></span></h2>
             <div class="rank" id="miniRank"></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- PARTICIPANTES -->
+    <!-- ===================== PARTICIPANTES ===================== -->
     <section class="tab" id="tab-participantes">
       <div class="card panel">
         <h2 id="formTitle">Agregar participante</h2>
         <form id="pForm" class="pform">
-          <div>
+          <div class="media-col">
             <div class="drop" id="drop" tabindex="0"><span>📷<br>Toca o arrastra<br>la foto aquí</span></div>
             <input type="file" id="file" accept="image/*" hidden>
+            <button class="btn ghost sm" type="button" id="pRemovePhoto" hidden>Quitar foto</button>
+            <div class="audio-box">
+              <label>🎵 Voz (MP3 corto)</label>
+              <div id="audioState" class="muted small">Sin audio</div>
+              <input type="file" id="audioFile" accept="audio/*" hidden>
+              <div class="row"><button class="btn ghost sm" type="button" id="audioPick">Elegir audio</button><button class="btn ghost sm" type="button" id="audioRemove" hidden>Quitar</button></div>
+            </div>
           </div>
           <div>
             <div class="fields">
-              <div class="full"><label for="fGrado">Grado / Jerarquía</label><input id="fGrado" maxlength="80" placeholder="Ej.: Teniente Coronel, Sargento Mayor, Licenciado…" list="grados"></div>
+              <div class="full"><label for="fGrado">Grado / Jerarquía / Cargo</label><input id="fGrado" maxlength="80" placeholder="Ej.: Teniente Coronel, Sargento Mayor, Licenciada…" list="grados"></div>
               <div><label for="fNombre">Nombre(s) *</label><input id="fNombre" maxlength="80" required></div>
               <div><label for="fApellidos">Apellidos *</label><input id="fApellidos" maxlength="80" required></div>
+              <div class="full"><label>Categoría *</label>
+                <div class="seg" id="fGenero">
+                  <button type="button" data-g="F">♀ Voz Femenina</button>
+                  <button type="button" data-g="M">♂ Voz Masculina</button>
+                </div>
+              </div>
+              <div class="full"><label for="fCancion">Canción que interpreta</label><input id="fCancion" maxlength="120" placeholder="Ej.: Alma Llanera"></div>
+              <div class="full"><label for="fDesc">Reseña breve / dedicatoria</label><textarea id="fDesc" maxlength="600" rows="2" placeholder="Opcional. En un homenaje póstumo, escriba aquí la dedicatoria."></textarea></div>
+              <div class="full checks">
+                <label class="switch"><input type="checkbox" id="fEval"><span></span>Enviar a la sala de evaluación del jurado</label>
+                <label class="switch"><input type="checkbox" id="fTribute"><span></span>🕯️ Homenaje póstumo (no se evalúa ni recibe votos)</label>
+              </div>
             </div>
             <datalist id="grados">
               <option>General en Jefe</option><option>Mayor General</option><option>General de División</option><option>General de Brigada</option>
-              <option>Coronel</option><option>Teniente Coronel</option><option>Mayor</option><option>Capitán</option><option>Primer Teniente</option><option>Teniente</option>
-              <option>Sargento Supervisor</option><option>Sargento Ayudante</option><option>Sargento Mayor de Primera</option><option>Sargento Mayor de Segunda</option><option>Sargento Primero</option><option>Sargento Segundo</option>
-              <option>Licenciado(a)</option><option>Ingeniero(a)</option><option>Abogado(a)</option><option>Doctor(a)</option><option>Profesor(a)</option><option>Ciudadano(a)</option>
+              <option>Almirante</option><option>Vicealmirante</option><option>Contralmirante</option>
+              <option>Coronel</option><option>Capitán de Navío</option><option>Teniente Coronel</option><option>Capitán de Fragata</option><option>Mayor</option><option>Capitán de Corbeta</option><option>Capitán</option><option>Teniente de Navío</option><option>Primer Teniente</option><option>Teniente</option>
+              <option>Sargento Supervisor</option><option>Sargento Ayudante</option><option>Sargento Mayor de Primera</option><option>Sargento Mayor de Segunda</option><option>Sargento Mayor de Tercera</option><option>Sargento Primero</option><option>Sargento Segundo</option>
+              <option>Licenciado(a)</option><option>Ingeniero(a)</option><option>Abogado(a)</option><option>Doctor(a)</option><option>Profesor(a)</option><option>Técnico(a)</option><option>Ciudadano(a)</option>
             </datalist>
             <div class="row" style="margin-top:14px">
               <button class="btn" type="submit" id="pSubmit">Agregar participante</button>
               <button class="btn ghost" type="button" id="pCancel" hidden>Cancelar edición</button>
-              <button class="btn ghost sm" type="button" id="pRemovePhoto" hidden>Quitar foto</button>
               <span class="muted" id="pLimit"></span>
             </div>
+            <div class="upbar" id="upbar" hidden><i></i><span></span></div>
           </div>
         </form>
       </div>
       <div class="card panel">
-        <h2>Lista de participantes <span class="muted">— use ◀ ▶ para cambiar el orden</span></h2>
+        <h2>Lista de participantes</h2>
+        <div class="row" style="margin:-4px 0 14px">
+          <button class="btn sm" id="evalAll">⚖️ Enviar todos a evaluación</button>
+          <button class="btn ghost sm" id="evalNone">Retirar todos de evaluación</button>
+          <span class="muted small">Use ◀ ▶ para cambiar el orden de presentación.</span>
+        </div>
         <div class="plist" id="plist"></div>
       </div>
     </section>
 
-    <!-- RESULTADOS -->
-    <section class="tab" id="tab-resultados">
+    <!-- ===================== JURADO ===================== -->
+    <section class="tab" id="tab-jurado">
+      <div class="cols">
+        <div>
+          <div class="card panel">
+            <h2>Miembros del jurado <span class="muted" id="jCount"></span></h2>
+            <p class="muted small" style="margin-top:-6px">Cada jurado ingresa en <code id="juryUrl"></code> con su usuario y clave.</p>
+            <div id="judges"></div>
+            <form class="row" id="jForm" style="margin-top:12px">
+              <input id="jName" class="grow" maxlength="80" placeholder="Nombre y apellido del jurado" required>
+              <button class="btn sm" type="submit">+ Agregar jurado</button>
+            </form>
+          </div>
+          <div class="card panel">
+            <h2>Proceso de evaluación <span id="jPill"></span></h2>
+            <div id="jInfo"></div>
+            <div id="jCtrls"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card panel">
+            <h2>Deliberación y aprobación</h2>
+            <div id="delib"></div>
+          </div>
+        </div>
+      </div>
       <div class="card panel">
-        <h2>Resultados y ajustes manuales</h2>
-        <p class="muted" style="margin-top:-6px">Los votos <b>reales</b> del público se conservan siempre. Los ajustes se suman o restan y quedan registrados en la bitácora. El total mostrado en pantalla = reales + ajuste.</p>
+        <h2>Planilla de puntuaciones <span class="muted">— toque una casilla para ver, modificar o desbloquear</span></h2>
+        <div class="row" style="margin:-4px 0 12px">
+          <button class="btn sm" id="jCsv">⬇ Exportar evaluación (CSV / Excel)</button>
+        </div>
+        <div class="matrix-wrap" id="matrix"></div>
+      </div>
+      <div class="cols">
+        <div class="card panel"><h2 style="color:#ffb3bd">Clasificación · Voz Femenina</h2><div class="rank" id="catF"></div></div>
+        <div class="card panel"><h2 style="color:#bcd0ff">Clasificación · Voz Masculina</h2><div class="rank" id="catM"></div></div>
+      </div>
+    </section>
+
+    <!-- ===================== AUDIENCIA ===================== -->
+    <section class="tab" id="tab-audiencia">
+      <div class="card panel">
+        <h2>Voz de la Audiencia · resultados y ajustes</h2>
+        <p class="muted small" style="margin-top:-6px">Los votos <b>reales</b> del público se conservan siempre. Los ajustes se suman o restan y quedan en el historial. Total mostrado = reales + ajuste.</p>
         <div class="row" style="margin-bottom:14px">
-          <a class="btn sm" id="csv">⬇ Exportar resultados (CSV / Excel)</a>
+          <button class="btn sm" id="csv">⬇ Exportar (CSV / Excel)</button>
           <button class="btn ghost sm" id="clearAdj">Quitar todos los ajustes</button>
         </div>
         <div class="rank" id="fullRank"></div>
       </div>
-      <div class="card panel">
-        <h2>Bitácora de cambios</h2>
-        <div class="audit" id="audit"></div>
-      </div>
     </section>
 
-    <!-- AJUSTES -->
-    <section class="tab" id="tab-ajustes">
+    <!-- ===================== COMUNIDAD ===================== -->
+    <section class="tab" id="tab-comunidad">
       <div class="cols">
         <div>
           <div class="card panel">
-            <h2>Código QR de votación</h2>
+            <h2>Interacción del público</h2>
+            <div class="toggles">
+              <label class="switch"><input type="checkbox" id="sComments"><span></span><b>Comentarios activados</b></label>
+              <label class="switch"><input type="checkbox" id="sPremod"><span></span>Moderación previa (aprobar cada comentario antes de publicarlo)</label>
+              <label class="switch"><input type="checkbox" id="sLikes"><span></span>“Me gusta” activados</label>
+            </div>
+            <p class="muted small">El sistema bloquea automáticamente groserías, insultos, enlaces y teléfonos. Para comentar o dar me gusta, cada persona debe registrar su nombre y apellido.</p>
+            <div class="kpis">
+              <div class="kpi"><b id="kFans">0</b><span>REGISTRADOS</span></div>
+              <div class="kpi"><b id="kLikes2">0</b><span>ME GUSTA</span></div>
+              <div class="kpi"><b id="kPending">0</b><span>POR APROBAR</span></div>
+            </div>
+          </div>
+          <div class="card panel"><h2>Me gusta por participante</h2><div class="rank" id="likesRank"></div></div>
+        </div>
+        <div>
+          <div class="card panel">
+            <h2>Comentarios en vivo</h2>
+            <div class="seg small-seg" id="cFilter"><button data-f="all" class="on">Todos</button><button data-f="pending">Por aprobar</button></div>
+            <div class="comments" id="comments"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PÁGINA ===================== -->
+    <section class="tab" id="tab-pagina">
+      <div class="cols">
+        <div>
+          <div class="card panel">
+            <h2>Textos de la página de inicio</h2>
+            <div class="fields">
+              <div class="full"><label for="sTitle">Nombre del festival</label><input id="sTitle" maxlength="120"></div>
+              <div><label for="sEdition">Edición</label><input id="sEdition" maxlength="60" placeholder="Primera Edición"></div>
+              <div><label for="sYear">Año</label><input id="sYear" maxlength="10"></div>
+              <div class="full"><label for="sTagline">Frase de portada</label><textarea id="sTagline" rows="2" maxlength="300"></textarea></div>
+              <div class="full"><label for="sDesc">Texto “Sobre el festival”</label><textarea id="sDesc" rows="6" maxlength="1500"></textarea></div>
+            </div>
+            <div class="toggles" style="margin-top:12px">
+              <label class="switch"><input type="checkbox" id="sPhotos"><span></span>Mostrar las fotos de los participantes al público</label>
+            </div>
+            <div class="row" style="margin-top:14px"><button class="btn sm" id="saveTexts">Guardar textos</button></div>
+          </div>
+          <div class="card panel">
+            <h2>Video de inicio</h2>
+            <p class="muted small" style="margin-top:-6px">Video corto (MP4 recomendado, máx. 120 MB). Aparece en la página de inicio y puede proyectarse en la pantalla de gala.</p>
+            <div id="videoBox"></div>
+            <input type="file" id="videoFile" accept="video/mp4,video/webm,video/quicktime" hidden>
+            <div class="row" style="margin-top:10px"><button class="btn sm" id="videoPick">⬆ Subir video</button><button class="btn ghost sm" id="videoRemove" hidden>Quitar video</button></div>
+            <div class="upbar" id="vupbar" hidden><i></i><span></span></div>
+          </div>
+        </div>
+        <div>
+          <div class="card panel">
+            <h2>Código QR</h2>
             <div class="qrbox">
               <img id="qrPrev" alt="QR">
               <div>
                 <label for="sUrl">Dirección (URL) a la que lleva el QR</label>
                 <input id="sUrl" placeholder="https://mi-festival.com/">
-                <div class="muted" style="font-size:.8rem;margin-top:6px">Si se deja vacío se usa: <code id="defUrl"></code></div>
+                <div class="muted small" style="margin-top:6px">Si se deja vacío se usa: <code id="defUrl"></code></div>
                 <div class="urls" id="lanUrls"></div>
-                <div class="row" style="margin-top:12px">
-                  <button class="btn sm" id="saveUrl">Guardar URL</button>
-                  <a class="btn ghost sm" id="qrDl">⬇ Descargar QR (PNG)</a>
-                </div>
+                <div class="row" style="margin-top:12px"><button class="btn sm" id="saveUrl">Guardar URL</button><a class="btn ghost sm" id="qrDl">⬇ Descargar QR</a></div>
               </div>
             </div>
           </div>
           <div class="card panel">
             <h2>Enlace de la pantalla de gala</h2>
-            <p class="muted" style="margin-top:-6px">Ábralo en la computadora conectada al proyector/pantalla LED. Presione <b>F</b> para pantalla completa.</p>
+            <p class="muted small" style="margin-top:-6px">Ábralo en la computadora del proyector. Presione <b>F</b> para pantalla completa.</p>
             <code id="screenUrl"></code>
-            <div class="row" style="margin-top:12px">
-              <button class="btn sm" id="copyScreen">Copiar enlace</button>
-              <button class="btn ghost sm" id="regenKey">Generar nueva clave</button>
-            </div>
+            <div class="row" style="margin-top:12px"><button class="btn sm" id="copyScreen">Copiar enlace</button><button class="btn ghost sm" id="regenKey">Generar nueva clave</button></div>
           </div>
-        </div>
-        <div>
           <div class="card panel">
-            <h2>Datos del evento</h2>
-            <div class="fields">
-              <div class="full"><label for="sTitle">Nombre del festival</label><input id="sTitle" maxlength="120"></div>
-              <div><label for="sYear">Año / edición</label><input id="sYear" maxlength="10"></div>
-            </div>
+            <h2>Seguridad y respaldo</h2>
+            <label class="switch"><input type="checkbox" id="sStrict"><span></span>Modo estricto anti-duplicado (votación del público)</label>
+            <p class="muted small">Bloquea un segundo voto desde la misma huella de dispositivo + red. Teléfonos idénticos en el mismo Wi-Fi podrían ser bloqueados por error.</p>
             <hr class="sep">
-            <label class="switch" style="text-transform:none;letter-spacing:0;color:var(--silver-100);font-size:.92rem"><input type="checkbox" id="sStrict"><span></span>Modo estricto anti-duplicado</label>
-            <p class="muted" style="font-size:.82rem;margin:8px 0 0">Además de la cookie y el registro del navegador, bloquea un segundo voto desde la misma huella de dispositivo + red. Úselo si sospecha que alguien vota en modo incógnito. <b>Precaución:</b> teléfonos idénticos en el mismo Wi-Fi podrían ser bloqueados por error.</p>
-            <div class="row" style="margin-top:16px"><button class="btn sm" id="saveSettings">Guardar datos</button></div>
-          </div>
-          <div class="card panel">
-            <h2>Zona de reinicio</h2>
-            <p class="muted" style="margin-top:-6px">Borra todos los votos y ajustes y deja la votación en espera (los participantes se conservan). Úselo para ensayos antes de la gala.</p>
-            <div class="row"><button class="btn ghost sm" id="backup">⬇ Descargar respaldo</button><button class="btn danger sm" id="resetAll">Reiniciar votación completa</button></div>
+            <div class="row">
+              <button class="btn ghost sm" id="backup">⬇ Descargar respaldo</button>
+              <button class="btn danger sm" id="resetVotes">Reiniciar votos del público</button>
+              <button class="btn danger sm" id="resetJury">Reiniciar evaluación del jurado</button>
+            </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ===================== HISTORIAL ===================== -->
+    <section class="tab" id="tab-historial">
+      <div class="card panel">
+        <h2>Historial completo</h2>
+        <div class="row" style="margin:-4px 0 12px">
+          <select id="hType" style="width:auto">
+            <option value="">Todos los eventos</option><option value="puntuacion">Puntuaciones del jurado</option><option value="alteracion">Modificaciones del administrador</option>
+            <option value="desempate">Desempates</option><option value="aprobacion">Aprobaciones</option><option value="jurado">Jurado</option><option value="audiencia">Voz de la Audiencia</option>
+            <option value="participante">Participantes</option><option value="comentario">Comentarios</option><option value="premiacion">Premiación</option><option value="configuracion">Configuración</option>
+          </select>
+          <input id="hSearch" class="grow" placeholder="Buscar…">
+          <button class="btn ghost sm" id="hReload">↻ Actualizar</button>
+        </div>
+        <div class="audit" id="audit"></div>
       </div>
     </section>
   </div>
 
   <div class="modal" id="ask"><div class="box panel"><h2 id="askT"></h2><p id="askM"></p><div class="row" style="justify-content:flex-end"><button class="btn ghost sm" id="askNo">Cancelar</button><button class="btn danger sm" id="askYes">Confirmar</button></div></div></div>
+  <div class="modal" id="scoreModal"><div class="box panel" id="scoreBox"></div></div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/common.js"></script>
-  <script>
-  (() => {
-    const $ = (s) => document.querySelector(s);
-    let token = null; try { token = localStorage.getItem('fv_admin_token'); } catch {}
-    let A = null, socket = null, editing = null, photoData = null, removePhotoFlag = false, presetMin = 5;
-
-    /* ---------- API ---------- */
-    async function api(path, body, method) {
-      const r = await fetch('/api/admin' + path, { method: method || (body ? 'POST' : 'GET'), headers: { 'Content-Type': 'application/json', 'x-admin-token': token || '' }, body: body ? JSON.stringify(body) : undefined });
-      if (r.status === 401) { logout(); throw new Error('Sesión expirada'); }
-      const j = await r.json().catch(() => ({}));
-      if (!r.ok) { FV.toast(j.error || 'Error', 'error'); throw new Error(j.error); }
-      return j;
-    }
-    const confirmBox = (t, m, yes = 'Confirmar') => new Promise((res) => {
-      $('#askT').textContent = t; $('#askM').innerHTML = m; $('#askYes').textContent = yes; $('#ask').classList.add('show');
-      const done = (v) => { $('#ask').classList.remove('show'); $('#askYes').onclick = $('#askNo').onclick = null; res(v); };
-      $('#askYes').onclick = () => done(true); $('#askNo').onclick = () => done(false);
-    });
-
-    /* ---------- sesión ---------- */
-    $('#loginForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: $('#pw').value }) });
-      const j = await r.json();
-      if (!r.ok) return FV.toast(j.error || 'Error', 'error');
-      token = j.token; try { localStorage.setItem('fv_admin_token', token); } catch {}
-      start();
-    };
-    function logout() { if (token) fetch('/api/admin/logout', { method: 'POST', headers: { 'x-admin-token': token } }).catch(() => {}); try { localStorage.removeItem('fv_admin_token'); } catch {} token = null; socket && socket.disconnect(); $('#app').hidden = true; $('#login').hidden = false; }
-    $('#logout').onclick = logout;
-
-    function start() {
-      $('#login').hidden = true; $('#app').hidden = false;
-      socket = io({ auth: { role: 'admin', token } });
-      socket.on('admin', (a) => { FV.syncClock(a.now); A = a; renderAll(); });
-      socket.on('results', (r) => { if (!A) return; A.results = r.results; A.audit = r.audit; renderResults(); });
-      socket.on('connect_error', () => FV.toast('Reconectando…'));
-      api('/state').then((a) => { FV.syncClock(a.now); A = a; renderAll(); }).catch(() => {});
-    }
-    if (token) start();
-
-    /* ---------- pestañas ---------- */
-    document.querySelectorAll('nav.tabs button').forEach((b) => b.onclick = () => {
-      document.querySelectorAll('nav.tabs button').forEach((x) => x.classList.toggle('on', x === b));
-      document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('on', t.id === 'tab-' + b.dataset.tab));
-    });
-
-    /* ---------- render ---------- */
-    const statusName = { idle: 'EN ESPERA', scheduled: 'PROGRAMADA', open: 'ABIERTA', closed: 'CERRADA' };
-    const screenLink = () => `${location.origin}/pantalla?k=${A.settings.screenKey}`;
-    const votingUrl = () => A.settings.publicUrl || location.origin + '/';
-    const toLocalInput = (ms) => { const d = new Date(ms); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
-
-    function renderAll() {
-      if (!A) return;
-      $('#hTitle').textContent = `${A.settings.title} ${A.settings.year}`;
-      $('#openScreen').href = screenLink();
-      renderVoting(); renderScreen(); renderResults(); renderParticipants(); renderSettings();
-    }
-
-    function renderVoting() {
-      const v = A.votingFull;
-      $('#statusPill').innerHTML = `<span class="pill ${v.status}"><i></i>${statusName[v.status]}</span>`;
-      const info = $('#votingInfo'), c = $('#votingCtrls');
-      const fmt = (ms) => new Date(ms).toLocaleString('es-VE', { hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: 'short' });
-      if (v.status === 'open') {
-        info.innerHTML = `<div class="bigclock gold-text" id="admClock">--:--</div><div class="muted">Cierra automáticamente a las ${fmt(v.endsAt)}</div>`;
-        c.innerHTML = `<hr class="sep"><div class="row"><button class="btn danger" data-act="stop">■ Cerrar votación ahora</button><button class="btn ghost sm" data-ext="1">+1 min</button><button class="btn ghost sm" data-ext="3">+3 min</button><button class="btn ghost sm" data-ext="5">+5 min</button></div>`;
-      } else if (v.status === 'scheduled') {
-        info.innerHTML = `<div class="bigclock gold-text" id="admClock">--:--</div><div class="muted">Abrirá a las ${fmt(v.startsAt)} y cerrará a las ${fmt(v.endsAt)}</div>`;
-        c.innerHTML = `<hr class="sep"><div class="row"><button class="btn danger sm" data-act="stop">Cancelar programación</button></div>`;
-      } else {
-        const closed = v.status === 'closed';
-        info.innerHTML = closed
-          ? `<p class="muted" style="margin:6px 0 0">La votación finalizó el ${fmt(v.endsAt)}. Ya puede mostrar el <b>Ganador</b> o el <b>Podio</b> en la pantalla de gala.</p>`
-          : `<p class="muted" style="margin:6px 0 0">El público ve las fotos de los participantes pero <b>no</b> el botón de votar ni el tiempo hasta que usted active la votación.</p>`;
-        c.innerHTML = `<hr class="sep">
-          <label>${closed ? 'Reabrir la votación por (los que ya votaron no podrán repetir)' : 'Duración de la votación'}</label>
-          <div class="presets">${[1, 2, 3, 5, 10, 15, 20, 30].map((m) => `<button data-min="${m}" class="${m === presetMin ? 'on' : ''}">${m} min</button>`).join('')}</div>
-          <div class="row"><input type="number" id="customMin" min="1" max="1440" value="${presetMin}" style="width:110px"><span class="muted">minutos</span>
-          <button class="btn ok grow" data-act="${closed ? 'reopen' : 'start'}">▶ ${closed ? 'Reabrir votación' : 'Iniciar votación ahora'}</button></div>
-          ${closed ? '' : `<hr class="sep"><label>…o programar inicio y cierre</label>
-          <div class="row"><div class="grow"><span class="muted" style="font-size:.75rem">Inicio</span><input type="datetime-local" id="schS" value="${toLocalInput(Date.now() + 10 * 60000)}"></div>
-          <div class="grow"><span class="muted" style="font-size:.75rem">Cierre</span><input type="datetime-local" id="schE" value="${toLocalInput(Date.now() + 25 * 60000)}"></div>
-          <button class="btn blue sm" data-act="schedule" style="align-self:flex-end">Programar</button></div>`}`;
-      }
-      $('#kPart').textContent = A.participants.length;
-    }
-
-    $('#votingCtrls').addEventListener('click', async (e) => {
-      const b = e.target.closest('button'); if (!b) return;
-      if (b.dataset.min) { presetMin = +b.dataset.min; $('#customMin').value = presetMin; document.querySelectorAll('.presets button').forEach((x) => x.classList.toggle('on', x === b)); return; }
-      if (b.dataset.ext) return api('/voting/extend', { minutes: +b.dataset.ext }).then(() => FV.toast(`+${b.dataset.ext} min agregados`, 'ok'));
-      const act = b.dataset.act;
-      if (act === 'start') {
-        const m = +$('#customMin').value;
-        if (await confirmBox('Iniciar votación', `La votación se abrirá <b>ahora</b> durante <b>${m} minuto(s)</b>. El público verá los botones de votar y el tiempo.`, 'Iniciar')) api('/voting/start', { minutes: m }).then(() => FV.toast('¡Votación abierta!', 'ok'));
-      } else if (act === 'reopen') {
-        api('/voting/extend', { minutes: +$('#customMin').value }).then(() => FV.toast('Votación reabierta', 'ok'));
-      } else if (act === 'schedule') {
-        const s = new Date($('#schS').value).getTime(), en = new Date($('#schE').value).getTime();
-        api('/voting/start', { startsAt: s, endsAt: en }).then(() => FV.toast('Votación programada', 'ok'));
-      } else if (act === 'stop') {
-        if (await confirmBox('Cerrar votación', 'El público ya no podrá votar.', 'Cerrar')) api('/voting/stop', {});
-      }
-    });
-    $('#votingCtrls').addEventListener('input', (e) => { if (e.target.id === 'customMin') presetMin = Math.max(1, +e.target.value || 1); });
-
-    setInterval(() => {
-      const el = $('#admClock'); if (!el || !A) return;
-      const v = A.votingFull;
-      el.textContent = FV.fmtTime((v.status === 'scheduled' ? v.startsAt : v.endsAt) - FV.now());
-    }, 250);
-
-    function renderScreen() {
-      document.querySelectorAll('#modes button').forEach((b) => b.classList.toggle('on', b.dataset.mode === A.screen.mode));
-      $('#showCounts').checked = !!A.screen.showCounts;
-      $('#replay').hidden = !['ganador', 'podio'].includes(A.screen.mode);
-    }
-    $('#modes').onclick = async (e) => {
-      const b = e.target.closest('button'); if (!b) return;
-      const m = b.dataset.mode;
-      if ((m === 'ganador' || m === 'podio') && A.votingFull.status === 'open') {
-        if (!(await confirmBox('La votación sigue abierta', '¿Desea mostrar el ganador antes de cerrar la votación?', 'Mostrar'))) return;
-      }
-      api('/screen', { mode: m });
-    };
-    $('#replay').onclick = () => api('/screen', { mode: A.screen.mode });
-    $('#showCounts').onchange = (e) => api('/screen', { showCounts: e.target.checked });
-
-    function rankItem(p, i, max, full) {
-      const adj = p.adjust ? `<div class="adj-note">${p.real} reales ${p.adjust > 0 ? '+' : ''}${p.adjust} ajuste</div>` : '';
-      return `<div class="rk" data-id="${p.id}">
-        <div class="pos">${i + 1}</div><div class="av">${FV.photoHtml(p)}</div>
-        <div style="min-width:0"><div class="nm">${p.grado ? `<small>${FV.esc(p.grado)}</small>` : ''}${FV.esc(FV.fullName(p))}</div><div class="bar"><div style="width:${max ? (p.votes / max) * 100 : 0}%"></div></div></div>
-        <div class="v">${p.votes}<small>${p.pct.toFixed(1)}%</small>${adj}</div>
-        ${full ? `<div class="ctrl">
-          <button class="neg" data-d="-10">−10</button><button class="neg" data-d="-1">−1</button><button data-d="1">+1</button><button data-d="10">+10</button>
-          <input type="number" min="0" placeholder="Fijar" data-set><button data-setbtn>Fijar total</button>
-          <span class="info">Reales: <b>${p.real}</b> · Ajuste: <b>${p.adjust > 0 ? '+' : ''}${p.adjust}</b></span></div>` : ''}
-      </div>`;
-    }
-    function renderResults() {
-      const r = A.results; const max = r.ranking[0]?.votes || 0;
-      $('#kTotal').textContent = r.total; $('#kVoters').textContent = r.voters;
-      $('#liveNote').textContent = r.total !== r.totalReal ? `— incluye ajustes (reales: ${r.totalReal})` : '';
-      $('#miniRank').innerHTML = r.ranking.length ? r.ranking.map((p, i) => rankItem(p, i, max, false)).join('') : '<p class="muted">Agregue participantes para comenzar.</p>';
-      // no re-renderizar la lista con ajustes si el usuario está escribiendo
-      const fr = $('#fullRank');
-      if (!fr.contains(document.activeElement) || document.activeElement.tagName !== 'INPUT') fr.innerHTML = r.ranking.map((p, i) => rankItem(p, i, max, true)).join('') || '<p class="muted">Sin participantes.</p>';
-      $('#audit').innerHTML = (A.audit || []).map((x) => `<div>${new Date(x.t).toLocaleTimeString('es-VE')} — ${FV.esc(x.msg)}</div>`).join('') || '<span class="muted">Sin cambios manuales.</span>';
-    }
-    $('#fullRank').addEventListener('click', (e) => {
-      const b = e.target.closest('button'); if (!b) return;
-      const id = b.closest('.rk').dataset.id;
-      if (b.dataset.d) api('/adjust', { participantId: id, delta: +b.dataset.d });
-      if (b.dataset.setbtn !== undefined) {
-        const v = b.closest('.rk').querySelector('[data-set]').value;
-        if (v === '') return FV.toast('Escriba el total de votos', 'error');
-        api('/adjust', { participantId: id, set: +v }).then(() => FV.toast('Total actualizado', 'ok'));
-      }
-    });
-    $('#clearAdj').onclick = async () => { if (await confirmBox('Quitar ajustes', 'Se volverá a los votos reales del público.', 'Quitar')) api('/adjust/clear', {}); };
-    $('#csv').onclick = async () => {
-      const r = await fetch('/api/admin/export.csv', { headers: { 'x-admin-token': token } });
-      const b = await r.blob(); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'resultados-festival-voz.csv'; a.click();
-    };
-
-    /* ---------- participantes ---------- */
-    function renderParticipants() {
-      const ps = A.participants, n = ps.length;
-      $('#pCount').textContent = `(${n}/${A.maxParticipants})`;
-      $('#pLimit').textContent = n >= A.maxParticipants && !editing ? `Se alcanzó el máximo de ${A.maxParticipants}.` : `${n} de ${A.maxParticipants}`;
-      $('#pSubmit').disabled = n >= A.maxParticipants && !editing;
-      $('#plist').innerHTML = ps.map((p, i) => `<div class="pi" data-id="${p.id}"><div class="ph">${FV.photoHtml(p)}</div><span class="no">${p.number}</span>
-        <div class="meta"><div class="g">${FV.esc(p.grado || '—')}</div><div class="n">${FV.esc(FV.fullName(p))}</div></div>
-        <div class="acts"><button data-mv="-1" ${i === 0 ? 'disabled' : ''} title="Mover antes">◀</button><button data-edit>Editar</button><button class="del" data-del>Eliminar</button><button data-mv="1" ${i === n - 1 ? 'disabled' : ''} title="Mover después">▶</button></div></div>`).join('') || '<p class="muted">Aún no hay participantes. Agregue el primero arriba.</p>';
-    }
-    function resetForm() {
-      editing = null; photoData = null; removePhotoFlag = false;
-      $('#pForm').reset(); $('#drop').innerHTML = '<span>📷<br>Toca o arrastra<br>la foto aquí</span>';
-      $('#formTitle').textContent = 'Agregar participante'; $('#pSubmit').textContent = 'Agregar participante';
-      $('#pCancel').hidden = true; $('#pRemovePhoto').hidden = true;
-      A && renderParticipants();
-    }
-    $('#pCancel').onclick = resetForm;
-    $('#pRemovePhoto').onclick = () => { removePhotoFlag = true; photoData = null; $('#drop').innerHTML = '<span>Sin foto</span>'; $('#pRemovePhoto').hidden = true; };
-
-    $('#plist').addEventListener('click', async (e) => {
-      const b = e.target.closest('button'); if (!b) return;
-      const id = b.closest('.pi').dataset.id; const p = A.participants.find((x) => x.id === id);
-      if (b.dataset.mv) {
-        const ids = A.participants.map((x) => x.id); const i = ids.indexOf(id), j = i + +b.dataset.mv;
-        [ids[i], ids[j]] = [ids[j], ids[i]]; api('/participants/reorder', { ids });
-      } else if (b.dataset.edit !== undefined) {
-        editing = id; photoData = null; removePhotoFlag = false;
-        $('#fGrado').value = p.grado; $('#fNombre').value = p.nombre; $('#fApellidos').value = p.apellidos;
-        $('#drop').innerHTML = p.photo ? `<img src="${FV.esc(p.photo)}" alt="">` : '<span>📷<br>Toca para<br>agregar foto</span>';
-        $('#formTitle').textContent = `Editar: ${FV.fullName(p)}`; $('#pSubmit').textContent = 'Guardar cambios';
-        $('#pCancel').hidden = false; $('#pRemovePhoto').hidden = !p.photo; $('#pSubmit').disabled = false;
-        document.querySelector('nav.tabs').scrollIntoView({ behavior: 'smooth' });
-      } else if (b.dataset.del !== undefined) {
-        if (await confirmBox('Eliminar participante', `¿Eliminar a <b>${FV.esc(FV.fullName(p))}</b>? Se perderán sus votos.`, 'Eliminar')) { api('/participants/' + id, null, 'DELETE'); if (editing === id) resetForm(); }
-      }
-    });
-
-    // carga y reducción de la foto en el navegador (máx. 900px, JPEG)
-    async function loadPhoto(file) {
-      if (!file || !file.type.startsWith('image/')) return FV.toast('Seleccione una imagen', 'error');
-      const url = URL.createObjectURL(file);
-      const img = new Image(); img.src = url; await img.decode().catch(() => {});
-      const max = 900, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
-      const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      URL.revokeObjectURL(url);
-      photoData = c.toDataURL('image/jpeg', .86); removePhotoFlag = false;
-      $('#drop').innerHTML = `<img src="${photoData}" alt="">`;
-    }
-    const drop = $('#drop');
-    drop.onclick = () => $('#file').click();
-    drop.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#file').click(); } };
-    $('#file').onchange = (e) => { loadPhoto(e.target.files[0]); e.target.value = ''; };
-    drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('over'); };
-    drop.ondragleave = () => drop.classList.remove('over');
-    drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('over'); loadPhoto(e.dataTransfer.files[0]); };
-
-    $('#pForm').onsubmit = async (e) => {
-      e.preventDefault();
-      const body = { grado: $('#fGrado').value, nombre: $('#fNombre').value, apellidos: $('#fApellidos').value };
-      if (photoData) body.photo = photoData;
-      $('#pSubmit').disabled = true;
-      try {
-        if (editing) { if (removePhotoFlag) body.removePhoto = true; await api('/participants/' + editing, body, 'PUT'); FV.toast('Cambios guardados', 'ok'); }
-        else { await api('/participants', body); FV.toast('Participante agregado', 'ok'); }
-        resetForm(); $('#fGrado').focus();
-      } catch {} finally { $('#pSubmit').disabled = false; }
-    };
-
-    /* ---------- ajustes ---------- */
-    function renderSettings() {
-      const s = A.settings;
-      if (document.activeElement !== $('#sUrl')) $('#sUrl').value = s.publicUrl || '';
-      if (document.activeElement !== $('#sTitle')) $('#sTitle').value = s.title;
-      if (document.activeElement !== $('#sYear')) $('#sYear').value = s.year;
-      $('#sStrict').checked = !!s.strictMode;
-      $('#defUrl').textContent = location.origin + '/';
-      const u = encodeURIComponent(votingUrl());
-      $('#qrPrev').src = `/api/qr.svg?u=${u}`; $('#qrDl').href = `/api/qr.png?u=${u}`;
-      $('#screenUrl').textContent = screenLink();
-      const isLocal = /localhost|127\.0\.0\.1/.test(location.hostname);
-      $('#lanUrls').innerHTML = (isLocal && A.lanUrls.length ? '<span class="muted" style="font-size:.78rem;width:100%">Direcciones en la red local (para teléfonos en el mismo Wi-Fi):</span>' : '') + (isLocal ? A.lanUrls.map((x) => `<button data-u="${x}">${x}</button>`).join('') : '');
-    }
-    $('#lanUrls').onclick = (e) => { const b = e.target.closest('button'); if (b) $('#sUrl').value = b.dataset.u; };
-    $('#saveUrl').onclick = () => api('/settings', { publicUrl: $('#sUrl').value.trim() }).then(() => FV.toast('URL del QR guardada', 'ok'));
-    $('#saveSettings').onclick = () => api('/settings', { title: $('#sTitle').value, year: $('#sYear').value, strictMode: $('#sStrict').checked }).then(() => FV.toast('Datos guardados', 'ok'));
-    $('#copyScreen').onclick = () => navigator.clipboard.writeText(screenLink()).then(() => FV.toast('Enlace copiado', 'ok'), () => FV.toast(screenLink()));
-    $('#regenKey').onclick = async () => { if (await confirmBox('Nueva clave', 'Las pantallas abiertas con el enlace anterior dejarán de funcionar.', 'Generar')) api('/settings', { regenScreenKey: true }); };
-    $('#backup').onclick = async () => {
-      const r = await fetch('/api/admin/backup.json', { headers: { 'x-admin-token': token } });
-      const b = await r.blob(); const x = document.createElement('a'); x.href = URL.createObjectURL(b); x.download = 'respaldo-festival.json'; x.click();
-    };
-    $('#resetAll').onclick = async () => { if (await confirmBox('Reiniciar votación', 'Se borrarán <b>todos los votos</b> y ajustes. Esta acción no se puede deshacer.', 'Reiniciar todo')) api('/voting/reset', {}).then(() => FV.toast('Votación reiniciada', 'ok')); };
-  })();
-  </script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>

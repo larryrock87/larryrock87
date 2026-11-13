@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1730">
+  <meta name="robots" content="noindex">
+  <title>Sala del Jurado · Festival de la Voz</title>
+  <link rel="icon" href="/img/favicon.png">
+  <link rel="stylesheet" href="/css/theme.css">
+  <style>
+    body { min-height: 100svh; }
+    .wrap { width: min(1280px, 100%); margin: 0 auto; padding: 0 16px 40px; }
+    h2 { font-family: var(--font-display); color: var(--gold-200); margin: 0 0 12px; letter-spacing: .04em; }
+    .muted { color: var(--silver-500); }
+
+    /* login y espera */
+    .center { min-height: 100svh; display: grid; place-items: center; padding: 20px 16px; text-align: center; position: relative; overflow: hidden; }
+    .center .box { position: relative; z-index: 2; width: min(420px, 100%); padding: 32px 26px; }
+    .center img.logo { width: 150px; margin: 0 auto 16px; filter: drop-shadow(0 10px 30px rgba(214,178,94,.35)); }
+    .center h1 { font-size: 1.35rem; margin: 0 0 6px; }
+    .center p { color: var(--silver-300); line-height: 1.55; margin: 0 0 18px; }
+    .field { text-align: left; margin-bottom: 12px; }
+    .field label { display: block; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-300); font-weight: 700; margin-bottom: 6px; }
+    .field input, textarea { width: 100%; font: inherit; color: #fff; background: rgba(5,12,27,.7); border: 1px solid rgba(214,178,94,.35); border-radius: 12px; padding: 12px 14px; outline: none; }
+    .field input:focus, textarea:focus { border-color: var(--gold-300); }
+    #clave { text-transform: uppercase; letter-spacing: .3em; font-weight: 700; }
+    .wait-ring { width: 64px; height: 64px; margin: 6px auto 16px; border-radius: 50%; border: 3px solid rgba(214,178,94,.2); border-top-color: var(--gold-300); animation: slowspin 1.4s linear infinite; }
+
+    /* cabecera */
+    header.top { position: sticky; top: 0; z-index: 20; background: rgba(5,12,27,.88); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(214,178,94,.25); }
+    header.top .in { display: flex; align-items: center; gap: 12px; padding: 10px 16px; max-width: 1280px; margin: 0 auto; flex-wrap: wrap; }
+    header.top img { width: 46px; height: 46px; }
+    header.top .t b { font-family: var(--font-display); color: var(--gold-200); font-size: 1rem; display: block; line-height: 1.1; }
+    header.top .t small { font-size: .7rem; letter-spacing: .18em; color: var(--silver-300); font-weight: 700; text-transform: uppercase; }
+    header.top .sp { flex: 1; }
+    .clockpill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: rgba(60,207,142,.12); color: #8dffc4; font-weight: 800; font-variant-numeric: tabular-nums; font-size: .9rem; }
+    .clockpill.closed { background: rgba(255,93,108,.12); color: #ff9aa4; }
+    .clockpill.urgent { animation: blink 1s steps(2) infinite; }
+    @keyframes blink { 50% { opacity: .5; } }
+    .prog { font-size: .8rem; color: var(--silver-300); font-weight: 600; }
+    .prog b { color: var(--gold-200); }
+    nav.tabs { display: flex; gap: 6px; max-width: 1280px; margin: 0 auto; padding: 0 16px 10px; }
+    nav.tabs button { border: 0; border-radius: 999px; padding: 9px 16px; font-weight: 700; font-size: .8rem; letter-spacing: .05em; background: rgba(255,255,255,.06); color: var(--silver-300); position: relative; }
+    nav.tabs button.on { background: var(--gold-grad); color: #2a1d02; }
+    nav.tabs button:disabled { opacity: .35; cursor: not-allowed; }
+    nav.tabs button .dot { position: absolute; top: 4px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--ve-red); box-shadow: 0 0 8px var(--ve-red); }
+
+    /* evaluar */
+    .layout { display: grid; grid-template-columns: 320px 1fr; gap: 18px; margin-top: 18px; align-items: start; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } body.viewing .plist-col { display: none; } body:not(.viewing) .ficha-col { display: none; } }
+    .plist-col { position: sticky; top: 132px; max-height: calc(100svh - 150px); overflow: auto; padding: 14px; }
+    @media (max-width: 900px) { .plist-col { position: static; max-height: none; } }
+    .gtitle { font-size: .68rem; letter-spacing: .2em; font-weight: 800; text-transform: uppercase; margin: 10px 4px 8px; }
+    .gtitle.F { color: #ffb3bd; } .gtitle.M { color: #bcd0ff; } .gtitle.X { color: var(--silver-300); }
+    .pitem { width: 100%; display: flex; align-items: center; gap: 10px; border: 0; text-align: left; padding: 8px; border-radius: 14px; background: transparent; color: inherit; margin-bottom: 4px; transition: background .2s; }
+    .pitem:hover { background: rgba(255,255,255,.05); }
+    .pitem.on { background: rgba(214,178,94,.16); box-shadow: inset 0 0 0 1px rgba(214,178,94,.5); }
+    .pitem .av { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex: none; box-shadow: 0 0 0 2px rgba(214,178,94,.5); }
+    .pitem .av img, .pitem .av .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: .9rem; }
+    .pitem .nm { flex: 1; min-width: 0; }
+    .pitem .nm b { display: block; font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pitem .nm small { color: var(--silver-500); font-size: .72rem; }
+    .st { flex: none; font-size: .64rem; font-weight: 800; letter-spacing: .08em; padding: 4px 8px; border-radius: 999px; }
+    .st.ok { background: rgba(60,207,142,.15); color: #8dffc4; }
+    .st.draft { background: rgba(255,204,0,.12); color: var(--ve-yellow); }
+    .st.no { background: rgba(255,255,255,.07); color: var(--silver-500); }
+
+    .ficha { padding: 0; overflow: hidden; }
+    .fhead { display: grid; grid-template-columns: 200px 1fr; gap: 20px; padding: 20px; align-items: center; background: linear-gradient(135deg, rgba(31,63,110,.5), transparent); border-bottom: 1px solid rgba(214,178,94,.2); }
+    @media (max-width: 600px) { .fhead { grid-template-columns: 110px 1fr; gap: 14px; padding: 14px; } }
+    .fhead .ph { aspect-ratio: 3/4; border-radius: 16px; overflow: hidden; box-shadow: 0 0 0 3px var(--gold-400), 0 12px 30px rgba(0,0,0,.5); position: relative; }
+    .fhead .ph img, .fhead .ph .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 2.5rem; }
+    .fhead .ph .no { position: absolute; top: 8px; left: 8px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-grad); color: #2a1d02; font-family: var(--font-display); font-weight: 900; }
+    .fhead .g { font-size: .72rem; letter-spacing: .16em; color: var(--gold-300); text-transform: uppercase; font-weight: 700; margin: 8px 0 2px; }
+    .fhead h3 { font-family: var(--font-display); font-size: clamp(1.3rem, 3.4vw, 2rem); margin: 0 0 6px; line-height: 1.1; }
+    .fhead .song { color: var(--silver-300); font-style: italic; margin-bottom: 10px; font-size: .9rem; }
+    .fhead .song b { color: var(--gold-200); font-style: normal; }
+    .fhead .desc { color: var(--silver-300); font-size: .85rem; line-height: 1.5; margin-bottom: 10px; }
+    .back { display: none; border: 0; background: rgba(255,255,255,.08); color: var(--gold-200); padding: 8px 14px; border-radius: 999px; font-weight: 700; margin: 0 0 12px; }
+    @media (max-width: 900px) { .back { display: inline-block; } }
+
+    .crit { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,.06); display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center; }
+    @media (max-width: 600px) { .crit { padding: 14px; } }
+    .crit .cn { font-weight: 800; font-size: .98rem; }
+    .crit .cn span { color: var(--gold-300); margin-right: 6px; font-family: var(--font-display); }
+    .crit .cd { grid-column: 1; color: var(--silver-500); font-size: .8rem; line-height: 1.4; }
+    .crit .val { grid-row: 1 / span 2; grid-column: 2; font-family: var(--font-display); font-weight: 900; font-size: 2rem; color: var(--gold-200); min-width: 92px; text-align: right; font-variant-numeric: tabular-nums; }
+    .crit .val small { font-size: .9rem; color: var(--silver-500); }
+    .pills { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-top: 8px; }
+    @media (max-width: 520px) { .pills { grid-template-columns: repeat(5, 1fr); } }
+    .pills button { border: 0; border-radius: 10px; padding: 10px 0; font-weight: 800; font-size: .92rem; background: rgba(255,255,255,.06); color: var(--silver-100); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); transition: transform .12s, background .15s; font-variant-numeric: tabular-nums; }
+    .pills button:hover { background: rgba(214,178,94,.18); }
+    .pills button.lo { background: rgba(214,178,94,.22); color: var(--gold-200); box-shadow: none; }
+    .pills button.on { background: var(--gold-grad); color: #2a1d02; transform: scale(1.08); box-shadow: 0 4px 14px -4px rgba(214,178,94,.8); }
+    .pills.locked button { pointer-events: none; }
+
+    .ffoot { display: flex; align-items: center; gap: 18px; padding: 18px 20px; flex-wrap: wrap; background: rgba(5,12,27,.45); }
+    .ring { width: 92px; height: 92px; position: relative; flex: none; }
+    .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring circle { fill: none; stroke-width: 8; }
+    .ring .bg { stroke: rgba(255,255,255,.08); }
+    .ring .fg { stroke: url(#gold); stroke-linecap: round; transition: stroke-dashoffset .5s cubic-bezier(.25,.9,.25,1); }
+    .ring .v { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-family: var(--font-display); font-weight: 900; font-size: 1.6rem; line-height: 1; }
+    .ring .v small { display: block; font-size: .6rem; font-family: var(--font-body); letter-spacing: .12em; color: var(--silver-500); }
+    .ffoot .info { flex: 1; min-width: 180px; color: var(--silver-300); font-size: .88rem; }
+    .saved-badge { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: rgba(60,207,142,.15); color: #8dffc4; font-weight: 800; }
+
+    /* resumen (Aceptar) */
+    .modal { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; padding: 16px; background: rgba(3,8,18,.82); backdrop-filter: blur(6px); }
+    .modal.show { display: grid; animation: fade .25s; }
+    @keyframes fade { from { opacity: 0; } }
+    .modal .box { width: min(520px, 100%); padding: 24px; animation: pop .35s cubic-bezier(.2,1.4,.4,1); max-height: 92svh; overflow: auto; }
+    @keyframes pop { from { transform: scale(.9); opacity: 0; } }
+    .sum-head { display: flex; gap: 14px; align-items: center; margin-bottom: 16px; }
+    .sum-head .av { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 3px var(--gold-400); flex: none; }
+    .sum-head .av img, .sum-head .av .avatar-fallback { width: 100%; height: 100%; object-fit: cover; }
+    .sum-head b { font-family: var(--font-display); font-size: 1.15rem; display: block; }
+    table.sum { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    table.sum td { padding: 10px 6px; border-bottom: 1px solid rgba(255,255,255,.07); font-size: .9rem; }
+    table.sum td:last-child { text-align: right; font-family: var(--font-display); font-weight: 900; color: var(--gold-200); font-size: 1.1rem; white-space: nowrap; }
+    table.sum tr.tot td { border: 0; font-size: 1.05rem; font-weight: 800; padding-top: 14px; }
+    table.sum tr.tot td:last-child { font-size: 1.7rem; }
+    .modal .row { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+    .warn { background: rgba(255,204,0,.08); border: 1px solid rgba(255,204,0,.3); color: #ffe48a; border-radius: 12px; padding: 10px 12px; font-size: .84rem; margin-bottom: 14px; }
+
+    /* resultados */
+    .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+    @media (max-width: 860px) { .cols2 { grid-template-columns: 1fr; } }
+    .card { padding: 18px; margin-top: 18px; }
+    .cols2 .card { margin-top: 0; }
+    .rk { display: grid; grid-template-columns: 26px 42px 1fr auto; gap: 10px; align-items: center; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,.05); }
+    .rk .pos { font-family: var(--font-display); font-weight: 900; color: var(--gold-200); text-align: center; }
+    .rk .av { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 2px rgba(214,178,94,.5); }
+    .rk .av img, .rk .av .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: .85rem; }
+    .rk .nm b { font-size: .88rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rk .bar { height: 7px; border-radius: 7px; background: rgba(255,255,255,.07); overflow: hidden; margin-top: 5px; }
+    .rk .bar i { display: block; height: 100%; background: var(--gold-grad); transition: width .8s; }
+    .rk .v { text-align: right; font-weight: 800; color: var(--gold-200); font-variant-numeric: tabular-nums; }
+    .rk .v small { display: block; color: var(--silver-500); font-weight: 600; font-size: .7rem; }
+    .judges-prog { display: flex; flex-wrap: wrap; gap: 8px; }
+    .judges-prog span { padding: 7px 12px; border-radius: 999px; background: rgba(255,255,255,.06); font-size: .8rem; }
+    .judges-prog span.ok { background: rgba(60,207,142,.14); color: #8dffc4; }
+
+    /* deliberación */
+    .tie { padding: 20px; margin-top: 18px; border: 1px solid rgba(255,204,0,.35); background: linear-gradient(135deg, rgba(255,204,0,.08), rgba(10,23,48,.7)); }
+    .tie h3 { margin: 0 0 4px; font-family: var(--font-display); color: var(--ve-yellow); }
+    .cands { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin: 14px 0; }
+    .cand { border: 0; text-align: center; padding: 14px; border-radius: 16px; background: rgba(5,12,27,.6); color: inherit; box-shadow: inset 0 0 0 1px rgba(214,178,94,.3); transition: transform .15s; }
+    .cand .av { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; margin: 0 auto 8px; box-shadow: 0 0 0 3px rgba(214,178,94,.5); }
+    .cand .av img, .cand .av .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 1.5rem; }
+    .cand b { display: block; font-size: .92rem; }
+    .cand.on { background: rgba(214,178,94,.2); box-shadow: inset 0 0 0 2px var(--gold-300), 0 0 30px rgba(214,178,94,.35); transform: translateY(-3px); }
+    .podiums { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 860px) { .podiums { grid-template-columns: 1fr; } }
+    .wcat h3 { margin: 0 0 10px; font-size: .78rem; letter-spacing: .22em; text-transform: uppercase; }
+    .wcat.F h3 { color: #ffb3bd; } .wcat.M h3 { color: #bcd0ff; }
+    .wrow { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 14px; background: rgba(5,12,27,.5); margin-bottom: 8px; }
+    .medal { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-weight: 900; color: #2a1d02; flex: none; }
+    .medal.p1 { background: var(--gold-grad); } .medal.p2 { background: var(--silver-grad); } .medal.p3 { background: linear-gradient(135deg, #f6c8a0, #b0703c 45%, #e9a978 75%, #8d5428); }
+    .wrow .av { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; flex: none; }
+    .wrow .av img, .wrow .av .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: .9rem; }
+    .wrow .nm { flex: 1; min-width: 0; }
+    .wrow .nm b { display: block; }
+    .wrow .nm small { color: var(--silver-500); }
+    .wrow .p { font-weight: 800; color: var(--gold-200); }
+    .approve { margin-top: 18px; padding: 20px; text-align: center; }
+    .approve .big { font-family: var(--font-display); font-size: 1.3rem; color: var(--gold-200); margin: 0 0 6px; }
+    .certified { padding: 26px; text-align: center; margin-top: 18px; background: radial-gradient(circle at 50% 0, rgba(214,178,94,.25), transparent 70%), rgba(10,23,48,.75); }
+    .certified .seal { width: 90px; height: 90px; margin: 0 auto 10px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-grad); font-size: 2.4rem; box-shadow: 0 0 40px rgba(214,178,94,.6); animation: pop .6s; }
+    .empty { text-align: center; color: var(--silver-300); padding: 40px 16px; }
+  </style>
+</head>
+<body>
+  <div class="stage-bg"></div>
+  <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c1"/><stop offset=".5" stop-color="#d6b25e"/><stop offset="1" stop-color="#a8802c"/></linearGradient></defs></svg>
+
+  <!-- INGRESO -->
+  <section class="center" id="login" hidden>
+    <div class="notes-bg" id="notes1"></div>
+    <form class="box panel" id="loginForm">
+      <img class="logo" src="/img/logo-256.webp" alt="">
+      <h1 class="display gold-text">Sala de Evaluación</h1>
+      <p>Acceso exclusivo para los miembros del jurado.</p>
+      <div class="field"><label for="usuario">Usuario</label><input id="usuario" autocomplete="username" autocapitalize="none" required placeholder="jurado1"></div>
+      <div class="field"><label for="clave">Clave</label><input id="clave" autocomplete="current-password" required maxlength="12"></div>
+      <button class="btn" style="width:100%;margin-top:6px" type="submit">Ingresar a la sala</button>
+    </form>
+  </section>
+
+  <!-- ESPERA -->
+  <section class="center" id="waiting" hidden>
+    <div class="notes-bg" id="notes2"></div>
+    <div class="box panel">
+      <img class="logo" src="/img/logo-256.webp" alt="">
+      <h1 class="display gold-text" id="wHello">Bienvenido(a)</h1>
+      <div class="wait-ring"></div>
+      <p id="wMsg">La sala de evaluación se abrirá cuando el administrador lo indique. Esta pantalla se actualizará sola.</p>
+      <button class="btn ghost sm" id="wOut">Salir</button>
+    </div>
+  </section>
+
+  <!-- SALA -->
+  <div id="app" hidden>
+    <header class="top">
+      <div class="in">
+        <img src="/img/logo-256.webp" alt="">
+        <div class="t"><b>Sala de Evaluación</b><small id="hJudge"></small></div>
+        <span class="sp"></span>
+        <span class="prog" id="hProg"></span>
+        <span class="clockpill" id="hClock"></span>
+        <button class="btn ghost sm" id="logout">Salir</button>
+      </div>
+      <nav class="tabs">
+        <button data-tab="evaluar" class="on">🎤 Evaluar</button>
+        <button data-tab="resultados" id="tabRes">📊 Resultados</button>
+        <button data-tab="ganadores" id="tabWin">🏆 Ganadores</button>
+      </nav>
+    </header>
+
+    <div class="wrap">
+      <section id="t-evaluar">
+        <div class="layout">
+          <aside class="plist-col panel" id="plist"></aside>
+          <div class="ficha-col" id="ficha"></div>
+        </div>
+      </section>
+      <section id="t-resultados" hidden></section>
+      <section id="t-ganadores" hidden></section>
+    </div>
+  </div>
+
+  <div class="modal" id="summary"><div class="box panel" id="sumBox"></div></div>
+  <div class="modal" id="objModal"><div class="box panel">
+    <h2>Observación sobre los ganadores</h2>
+    <p class="muted">Su observación será enviada al administrador del festival.</p>
+    <textarea id="objText" rows="4" maxlength="400" placeholder="Describa su observación…"></textarea>
+    <div class="row" style="margin-top:12px"><button class="btn ghost sm" id="objNo">Cancelar</button><button class="btn danger sm" id="objYes">Enviar observación</button></div>
+  </div></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/common.js"></script>
+  <script>
+  (() => {
+    const $ = (s) => document.querySelector(s);
+    let token = null; try { token = localStorage.getItem('fv_jury_token'); } catch {}
+    let S = null, socket = null, current = null, tab = 'evaluar', drafts = {}, tieChoice = {};
+    FV.notes($('#notes1'), 18); FV.notes($('#notes2'), 18);
+    const ord = (n) => `${n}.º`;
+    const placeName = { 1: 'Primer lugar', 2: 'Segundo lugar', 3: 'Tercer lugar' };
+
+    function loadDrafts() { try { drafts = JSON.parse(localStorage.getItem('fv_jury_drafts_' + S.me.id) || '{}'); } catch { drafts = {}; } }
+    function saveDrafts() { try { localStorage.setItem('fv_jury_drafts_' + S.me.id, JSON.stringify(drafts)); } catch {} }
+
+    async function api(path, body) {
+      const r = await fetch('/api/jury' + path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', 'x-jury-token': token || '' }, body: body ? JSON.stringify(body) : undefined });
+      if (r.status === 401) { logout(); throw new Error('Sesión expirada'); }
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { FV.toast(j.error || 'Error', 'error'); throw new Error(j.error); }
+      return j;
+    }
+
+    /* ---------- sesión ---------- */
+    $('#loginForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const r = await fetch('/api/jury/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario: $('#usuario').value, clave: $('#clave').value }) });
+      const j = await r.json();
+      if (!r.ok) return FV.toast(j.error || 'Error', 'error');
+      token = j.token; try { localStorage.setItem('fv_jury_token', token); } catch {}
+      start();
+    };
+    function logout() {
+      try { localStorage.removeItem('fv_jury_token'); } catch {}
+      token = null; S = null; socket && socket.disconnect();
+      show('login');
+    }
+    $('#logout').onclick = $('#wOut').onclick = logout;
+    function show(which) {
+      $('#login').hidden = which !== 'login'; $('#waiting').hidden = which !== 'waiting'; $('#app').hidden = which !== 'app';
+    }
+    function start() {
+      socket && socket.disconnect();
+      socket = io({ auth: { role: 'judge', token } });
+      socket.on('jury', (s) => { if (!s) return logout(); const first = !S; FV.syncClock(s.now); S = s; if (first) loadDrafts(); render(); });
+      socket.on('jury-logout', logout);
+    }
+    if (token) start(); else show('login');
+
+    /* ---------- reloj ---------- */
+    function tick() {
+      if (!S) return;
+      const j = S.jury, el = $('#hClock');
+      if (j.status === 'open') {
+        if (!j.endsAt) { el.textContent = '● SALA ABIERTA'; el.className = 'clockpill'; return; }
+        const left = j.endsAt - FV.now();
+        el.textContent = '⏱ ' + FV.fmtTime(left); el.className = 'clockpill' + (left < 60000 ? ' urgent' : '');
+      } else { el.textContent = j.status === 'closed' ? '■ SALA CERRADA' : 'EN ESPERA'; el.className = 'clockpill closed'; }
+    }
+    setInterval(tick, 250);
+
+    /* ---------- render ---------- */
+    function render() {
+      if (!S) return;
+      const st = S.jury.status;
+      $('#wHello').textContent = `Bienvenido(a), ${S.me.nombre}`;
+      if (st === 'idle') { $('#wMsg').textContent = 'La sala de evaluación se abrirá cuando el administrador lo indique. Esta pantalla se actualizará sola.'; return show('waiting'); }
+      show('app');
+      $('#hJudge').textContent = `Jurado · ${S.me.nombre}`;
+      const saved = S.participants.filter((p) => S.myScores[p.id]).length;
+      $('#hProg').innerHTML = `Evaluados <b>${saved}/${S.participants.length}</b>`;
+      $('#tabRes').disabled = !S.results;
+      $('#tabWin').disabled = !S.deliberation;
+      const needsMe = S.deliberation && (S.deliberation.ties.some((t) => !t.myVote && !t.needsAdmin) || (S.deliberation.allResolved && !S.deliberation.myApproval));
+      $('#tabWin').innerHTML = '🏆 Ganadores' + (needsMe ? '<span class="dot"></span>' : '');
+      if ((tab === 'resultados' && !S.results) || (tab === 'ganadores' && !S.deliberation)) setTab('evaluar');
+      renderList(); renderFicha(); renderResults(); renderWinners(); tick();
+    }
+
+    function setTab(t) {
+      tab = t;
+      document.querySelectorAll('nav.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
+      ['evaluar', 'resultados', 'ganadores'].forEach((x) => ($('#t-' + x).hidden = x !== t));
+      scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.querySelector('nav.tabs').onclick = (e) => { const b = e.target.closest('button'); if (b && !b.disabled) setTab(b.dataset.tab); };
+
+    function statusOf(p) { return S.myScores[p.id] ? 'ok' : drafts[p.id] && drafts[p.id].some(Boolean) ? 'draft' : 'no'; }
+    function renderList() {
+      const groups = [['F', 'Voz Femenina'], ['M', 'Voz Masculina'], ['X', 'Sin categoría']];
+      const html = groups.map(([g, name]) => {
+        const ps = S.participants.filter((p) => (g === 'X' ? !['F', 'M'].includes(p.genero) : p.genero === g));
+        if (!ps.length) return '';
+        return `<div class="gtitle ${g}">${name} · ${ps.length}</div>` + ps.map((p) => {
+          const s = statusOf(p);
+          return `<button class="pitem ${current === p.id ? 'on' : ''}" data-p="${p.id}"><span class="av">${FV.photoHtml(p)}</span><span class="nm"><b>${p.number}. ${FV.esc(FV.fullName(p))}</b><small>${FV.esc(p.grado || '')}</small></span><span class="st ${s}">${s === 'ok' ? '✓ GUARDADO' : s === 'draft' ? 'BORRADOR' : 'PENDIENTE'}</span></button>`;
+        }).join('');
+      }).join('');
+      $('#plist').innerHTML = html || '<div class="empty">El administrador aún no ha enviado participantes a evaluación.</div>';
+      if (!current || !S.participants.some((p) => p.id === current)) {
+        const next = S.participants.find((p) => !S.myScores[p.id]) || S.participants[0];
+        current = next ? next.id : null;
+        if (current) document.querySelector(`.pitem[data-p="${current}"]`)?.classList.add('on');
+      }
+    }
+    $('#plist').onclick = (e) => {
+      const b = e.target.closest('.pitem'); if (!b) return;
+      current = b.dataset.p; FV.stopAudio(); document.body.classList.add('viewing');
+      renderList(); renderFicha(true);
+      if (innerWidth <= 900) scrollTo({ top: 0 });
+    };
+
+    function renderFicha(force) {
+      const box = $('#ficha');
+      const p = S.participants.find((x) => x.id === current);
+      if (!p) { box.innerHTML = `<div class="panel empty">Seleccione un participante.</div>`; return; }
+      const saved = S.myScores[p.id];
+      const vals = saved ? saved.c : (drafts[p.id] || S.criteria.map(() => 0));
+      const key = p.id + JSON.stringify(vals) + !!saved + S.jury.status + p.photo + p.audio;
+      if (!force && box.dataset.key === key) return;
+      box.dataset.key = key;
+      const locked = !!saved || S.jury.status !== 'open';
+      const total = vals.reduce((a, b) => a + b, 0), max = S.criteria.length * S.maxPoints;
+      const idx = S.participants.findIndex((x) => x.id === p.id);
+      box.innerHTML = `
+        <button class="back" id="back">← Lista de participantes</button>
+        <article class="ficha panel">
+          <div class="fhead">
+            <div class="ph">${FV.photoHtml(p)}<span class="no">${p.number}</span></div>
+            <div>
+              ${p.genero ? `<span class="chip-gender ${p.genero}">${FV.genderName[p.genero]}</span>` : ''}
+              ${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}
+              <h3 class="gold-text">${FV.esc(FV.fullName(p))}</h3>
+              ${p.cancion ? `<div class="song">Interpreta: <b>${FV.esc(p.cancion)}</b></div>` : ''}
+              ${p.descripcion ? `<div class="desc">${FV.esc(p.descripcion)}</div>` : ''}
+              ${FV.playerHtml(p.audio, 'Escuchar su voz')}
+            </div>
+          </div>
+          ${S.criteria.map((c, i) => `
+            <div class="crit" data-ci="${i}">
+              <div class="cn"><span>${i + 1}.</span>${FV.esc(c.name)}</div>
+              <div class="val">${vals[i] || '–'}<small>/${S.maxPoints}</small></div>
+              <div class="cd">${FV.esc(c.desc)}</div>
+              <div class="pills ${locked ? 'locked' : ''}">${Array.from({ length: S.maxPoints - S.minPoints + 1 }, (_, k) => k + S.minPoints).map((n) => `<button type="button" data-n="${n}" class="${vals[i] === n ? 'on' : vals[i] > n ? 'lo' : ''}" ${locked ? 'tabindex="-1"' : ''}>${n}</button>`).join('')}</div>
+            </div>`).join('')}
+          <div class="ffoot">
+            <div class="ring"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" cx="50" cy="50" r="42" stroke-dasharray="263.9" stroke-dashoffset="${263.9 * (1 - total / max)}"/></svg><div class="v"><div>${total}<small>DE ${max}</small></div></div></div>
+            <div class="info">${saved ? `Evaluación registrada el ${new Date(saved.t).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}. Ya no puede modificarse.` : S.jury.status !== 'open' ? 'La sala de evaluación está cerrada.' : vals.every(Boolean) ? 'Revise su puntuación y presione <b>Aceptar</b>.' : `Seleccione la puntuación de los ${S.criteria.length} aspectos (${vals.filter(Boolean).length}/${S.criteria.length}).`}</div>
+            ${saved ? `<span class="saved-badge">✓ Registrado</span>` : `<button class="btn" id="accept" ${locked || !vals.every(Boolean) ? 'disabled' : ''}>Aceptar</button>`}
+            ${idx < S.participants.length - 1 ? `<button class="btn ghost sm" id="nextP">Siguiente →</button>` : ''}
+          </div>
+        </article>`;
+      $('#back').onclick = () => { document.body.classList.remove('viewing'); FV.stopAudio(); };
+      if ($('#nextP')) $('#nextP').onclick = () => { current = S.participants[idx + 1].id; FV.stopAudio(); renderList(); renderFicha(true); scrollTo({ top: 0, behavior: 'smooth' }); };
+      if ($('#accept')) $('#accept').onclick = () => openSummary(p);
+    }
+    $('#ficha').addEventListener('click', (e) => {
+      const b = e.target.closest('.pills button'); if (!b) return;
+      const p = S.participants.find((x) => x.id === current);
+      if (!p || S.myScores[p.id] || S.jury.status !== 'open') return;
+      const i = +b.closest('.crit').dataset.ci;
+      drafts[p.id] = drafts[p.id] || S.criteria.map(() => 0);
+      drafts[p.id][i] = +b.dataset.n; saveDrafts();
+      if (navigator.vibrate) navigator.vibrate(8);
+      renderFicha(); renderList();
+    });
+
+    /* ---------- Aceptar → resumen → Editar / Guardar ---------- */
+    function openSummary(p) {
+      const vals = drafts[p.id];
+      const total = vals.reduce((a, b) => a + b, 0), max = S.criteria.length * S.maxPoints;
+      $('#sumBox').innerHTML = `
+        <h2>Resumen de su evaluación</h2>
+        <div class="sum-head"><span class="av">${FV.photoHtml(p)}</span><div><b>${FV.esc(FV.fullName(p))}</b><span class="muted">${FV.esc(p.grado || '')}${p.genero ? ' · ' + FV.genderName[p.genero] : ''}</span></div></div>
+        <table class="sum">${S.criteria.map((c, i) => `<tr><td>${FV.esc(c.name)}</td><td>${vals[i]} / ${S.maxPoints}</td></tr>`).join('')}
+          <tr class="tot"><td>Puntuación total</td><td>${total} / ${max}</td></tr></table>
+        <div class="warn">Al presionar <b>Guardar</b> la evaluación quedará registrada y <b>no podrá modificarse</b>.</div>
+        <div class="row"><button class="btn ghost" id="sEdit">✎ Editar</button><button class="btn ok" id="sSave">✓ Guardar</button></div>`;
+      $('#summary').classList.add('show');
+      $('#sEdit').onclick = () => $('#summary').classList.remove('show');
+      $('#sSave').onclick = async () => {
+        $('#sSave').disabled = true;
+        try {
+          await api('/score', { participantId: p.id, c: vals });
+          delete drafts[p.id]; saveDrafts();
+          S.myScores[p.id] = { c: vals, t: Date.now() };
+          $('#summary').classList.remove('show');
+          FV.toast(`Evaluación de ${p.nombre} registrada`, 'ok');
+          const next = S.participants.find((x) => !S.myScores[x.id]);
+          if (next) { current = next.id; } else { FV.confetti({ duration: 2500, count: 140 }); FV.toast('¡Completó todas sus evaluaciones! Ya puede ver los resultados.', 'ok'); }
+          render(); renderFicha(true);
+        } catch { $('#sSave').disabled = false; }
+      };
+    }
+    $('#summary').addEventListener('click', (e) => { if (e.target.id === 'summary') $('#summary').classList.remove('show'); });
+
+    /* ---------- resultados ---------- */
+    function rankRows(list) {
+      if (!list.length) return '<div class="empty">Sin participantes.</div>';
+      return list.map((t, i) => `<div class="rk"><span class="pos">${i + 1}</span><span class="av">${FV.photoHtml(t)}</span><div class="nm" style="min-width:0"><b>${FV.esc(FV.fullName(t))}</b><div class="bar"><i style="width:${t.pct}%"></i></div></div><div class="v">${t.pct.toFixed(1)}%<small>${t.total} pts · ${t.count}/${S.judgesCount} jurados</small></div></div>`).join('');
+    }
+    function renderResults() {
+      const box = $('#t-resultados');
+      if (!S.results) { box.innerHTML = ''; return; }
+      const R = S.results;
+      box.innerHTML = `
+        <div class="card panel"><h2>Progreso del jurado</h2>
+          <p class="muted" style="margin-top:-6px">${R.complete ? 'Todos los jurados completaron sus evaluaciones.' : 'Los porcentajes se actualizan en tiempo real a medida que los jurados guardan sus evaluaciones.'}</p>
+          <div class="judges-prog">${S.progress.map((j) => `<span class="${j.saved === j.total ? 'ok' : ''}">${j.saved === j.total ? '✓' : '…'} ${FV.esc(j.nombre)} · ${j.saved}/${j.total}</span>`).join('')}</div>
+        </div>
+        <div class="cols2">
+          <div class="card panel"><h2 style="color:#ffb3bd">Voz Femenina</h2>${rankRows(R.categories.F)}</div>
+          <div class="card panel"><h2 style="color:#bcd0ff">Voz Masculina</h2>${rankRows(R.categories.M)}</div>
+        </div>
+        <p class="muted" style="text-align:center;font-size:.8rem;margin-top:14px">Porcentaje = suma de los puntos de los ${S.judgesCount} jurados ÷ ${S.judgesCount * S.criteria.length * S.maxPoints} puntos posibles.</p>`;
+    }
+
+    /* ---------- ganadores, desempates y aprobación ---------- */
+    function winRows(list, g) {
+      if (!list.length) return '<p class="muted">Pendiente…</p>';
+      return list.map((w) => `<div class="wrow"><span class="medal p${w.position}">${w.position}</span><span class="av">${FV.photoHtml(w)}</span><span class="nm"><b>${FV.esc(FV.fullName(w))}</b><small>${FV.esc(w.grado || '')}${w.tiebreak ? ' · por desempate' : ''}</small></span><span class="p">${w.pct.toFixed(1)}%</span></div>`).join('');
+    }
+    function renderWinners() {
+      const box = $('#t-ganadores');
+      const D = S.deliberation;
+      if (!D) { box.innerHTML = ''; return; }
+      let html = '';
+      for (const t of D.ties) {
+        const chosen = tieChoice[t.key] || t.myVote;
+        html += `<div class="tie panel" data-key="${t.key}">
+          <h3>⚖ Empate · ${placeName[t.position]} · ${FV.genderName[t.genero]}</h3>
+          <p class="muted" style="margin:0">${t.round > 1 ? `Ronda ${t.round}. ` : ''}Estos participantes obtuvieron la misma puntuación. Solo uno puede ocupar el ${ord(t.position)} lugar: seleccione al ganador.</p>
+          <div class="cands">${t.candidates.map((c) => `<button class="cand ${chosen === c.id ? 'on' : ''}" data-cand="${c.id}" ${t.myVote || t.needsAdmin ? 'disabled' : ''}><span class="av">${FV.photoHtml(c)}</span><b>${FV.esc(FV.fullName(c))}</b><small class="muted">${FV.esc(c.grado || '')}</small></button>`).join('')}</div>
+          ${t.needsAdmin ? `<div class="warn">El jurado no logró un ganador por mayoría. El administrador del festival decidirá este puesto.</div>`
+            : t.myVote ? `<p style="color:#8dffc4;font-weight:700;margin:0">✓ Su voto fue registrado · ${t.received}/${S.judgesCount} jurados han votado</p>`
+            : `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn" data-tievote="${t.key}" ${chosen ? '' : 'disabled'}>Confirmar mi voto</button><span class="muted">${t.received}/${S.judgesCount} jurados han votado</span></div>`}
+        </div>`;
+      }
+      html += `<div class="card panel"><h2>Ganadores propuestos</h2>
+        ${D.allResolved ? '' : '<p class="muted" style="margin-top:-6px">Se completarán cuando se resuelvan los empates.</p>'}
+        <div class="podiums"><div class="wcat F"><h3>Voz Femenina</h3>${winRows(D.winners.F)}</div><div class="wcat M"><h3>Voz Masculina</h3>${winRows(D.winners.M)}</div></div></div>`;
+      if (D.allResolved) {
+        if (D.allApproved) {
+          html += `<div class="certified panel"><div class="seal">✓</div><h2 style="margin:0">Resultados certificados por el jurado</h2><p class="muted">Los ${S.judgesCount} jurados aprobaron a los ganadores. El administrador anunciará los resultados en la gala.</p></div>`;
+        } else if (D.myApproval) {
+          html += `<div class="approve panel"><p class="big">${D.myApproval.ok ? '✓ Usted aprobó a estos ganadores' : '✎ Usted envió una observación'}</p><p class="muted">Aprobaciones: ${D.approvedCount}/${S.judgesCount} jurados.</p>${!D.myApproval.ok ? `<button class="btn sm" id="apOk">Aprobar ahora</button>` : ''}</div>`;
+        } else {
+          html += `<div class="approve panel"><p class="big">¿Aprueba a estos seis ganadores?</p><p class="muted">Tres de la Voz Femenina y tres de la Voz Masculina. Aprobaciones: ${D.approvedCount}/${S.judgesCount}.</p>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn ghost" id="apObj">Tengo una observación</button><button class="btn ok" id="apOk">✓ Acepto a los ganadores</button></div></div>`;
+        }
+      }
+      box.innerHTML = html;
+      if ($('#apOk')) $('#apOk').onclick = async () => { await api('/approve', { ok: true }); FV.toast('Aprobación registrada', 'ok'); };
+      if ($('#apObj')) $('#apObj').onclick = () => { $('#objText').value = ''; $('#objModal').classList.add('show'); };
+    }
+    $('#t-ganadores').addEventListener('click', async (e) => {
+      const c = e.target.closest('[data-cand]');
+      if (c && !c.disabled) { const key = c.closest('.tie').dataset.key; tieChoice[key] = c.dataset.cand; renderWinners(); return; }
+      const v = e.target.closest('[data-tievote]');
+      if (v) {
+        const key = v.dataset.tievote; v.disabled = true;
+        try { await api('/tie', { key, participantId: tieChoice[key] }); FV.toast('Voto de desempate registrado', 'ok'); } catch { v.disabled = false; }
+      }
+    });
+    $('#objNo').onclick = () => $('#objModal').classList.remove('show');
+    $('#objYes').onclick = async () => { await api('/approve', { ok: false, note: $('#objText').value }); $('#objModal').classList.remove('show'); FV.toast('Observación enviada al administrador', 'ok'); };
+  })();
+  </script>
+</body>
+</html>

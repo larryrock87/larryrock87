@@ -184,6 +184,84 @@
     .pod.p3 .who, .pod.p3 .block { animation-delay: .3s !important; }
     .pod.p1 .who, .pod.p1 .block { animation-delay: 1.6s !important; }
 
+    /* ---------- Escena: HOMENAJE ---------- */
+    #s-homenaje { background: radial-gradient(ellipse at 50% 30%, rgba(214,178,94,.16), transparent 55%), radial-gradient(circle at 50% 120%, rgba(255,170,60,.12), transparent 50%), #04060c; }
+    #s-homenaje .wrapT { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 90px; padding: 0 120px; }
+    .trib { display: flex; align-items: center; gap: 70px; opacity: 0; }
+    .scene.on .trib { animation: tribIn 3s ease forwards; }
+    @keyframes tribIn { from { opacity: 0; filter: blur(14px); transform: scale(.97); } to { opacity: 1; filter: none; transform: none; } }
+    .trib .frame { position: relative; width: 520px; height: 690px; border-radius: 26px; overflow: hidden; flex: none; box-shadow: 0 0 0 4px rgba(214,178,94,.75), 0 0 0 14px rgba(214,178,94,.12), 0 0 120px rgba(214,178,94,.25); }
+    .trib .frame img, .trib .frame .avatar-fallback { width: 100%; height: 100%; object-fit: cover; filter: grayscale(.9) sepia(.3) brightness(.95) contrast(1.05); font-size: 120px; }
+    .trib .frame .rib { position: absolute; top: 34px; right: -70px; transform: rotate(45deg); background: #0b0b0d; color: var(--gold-200); font-weight: 800; letter-spacing: .2em; font-size: 18px; padding: 12px 90px; border-top: 2px solid rgba(214,178,94,.6); border-bottom: 2px solid rgba(214,178,94,.6); }
+    .trib .txt { max-width: 760px; }
+    .trib .kick { font-size: 24px; letter-spacing: .5em; color: var(--gold-300); font-weight: 800; }
+    .trib h2 { font-family: var(--font-display); font-size: 84px; line-height: 1.05; margin: 18px 0 12px; font-weight: 900; }
+    .trib .g { font-size: 28px; letter-spacing: .2em; color: var(--silver-300); text-transform: uppercase; font-weight: 700; }
+    .trib .d { font-size: 30px; line-height: 1.6; color: var(--silver-100); font-style: italic; margin-top: 30px; }
+    .trib.multi { flex-direction: column; gap: 24px; text-align: center; }
+    .trib.multi .frame { width: 380px; height: 500px; }
+    .trib.multi h2 { font-size: 48px; }
+    .candles { position: absolute; left: 0; right: 0; bottom: 40px; display: flex; justify-content: center; gap: 70px; }
+    .cnd { position: relative; width: 26px; height: 90px; }
+    .cnd::before { content: ''; position: absolute; bottom: 0; left: 0; width: 26px; height: 64px; border-radius: 4px; background: linear-gradient(90deg, #d9cfb8, #fff6e0, #c9bea6); }
+    .cnd::after { content: ''; position: absolute; left: 5px; top: 0; width: 16px; height: 26px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: radial-gradient(circle at 50% 70%, #fffbe0, #ffc23a 55%, rgba(255,120,0,0) 72%); box-shadow: 0 0 40px 12px rgba(255,190,80,.35); animation: flick 1.4s ease-in-out infinite alternate; }
+    .cnd:nth-child(2n)::after { animation-delay: -.5s; } .cnd:nth-child(3n)::after { animation-delay: -.9s; }
+    @keyframes flick { 50% { transform: scale(.85, 1.12) rotate(-3deg); opacity: .85; } }
+
+    /* ---------- Escena: VIDEO ---------- */
+    #s-video { background: #000; }
+    #s-video video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+
+    /* ---------- Escena: PREMIACIÓN DEL JURADO ---------- */
+    #s-premiacion { background: radial-gradient(circle at 50% 40%, rgba(31,63,110,.55), rgba(3,7,16,.97) 72%); }
+    .aw-title { position: absolute; top: 60px; left: 0; right: 0; text-align: center; }
+    .aw-title .kick { font-size: 22px; letter-spacing: .5em; color: var(--gold-300); font-weight: 800; padding-left: .5em; }
+    .aw-title h2 { font-family: var(--font-display); font-weight: 900; font-size: 92px; margin: 10px 0 0; line-height: 1; opacity: 0; transform: scale(1.4); filter: blur(10px); }
+    .aw-title h2.in { animation: titleIn 1.2s cubic-bezier(.2,.8,.2,1) forwards; }
+    @keyframes titleIn { to { opacity: 1; transform: none; filter: none; } }
+    .aw-cards { position: absolute; left: 0; right: 0; top: 260px; display: flex; justify-content: center; gap: 120px; }
+    .aw-card { width: 700px; text-align: center; opacity: 0; transform: translateY(60px) scale(.92); }
+    .aw-card.in { animation: cardIn 1.3s cubic-bezier(.2,.8,.2,1) forwards; }
+    .aw-card.M.in { animation-delay: .35s; }
+    @keyframes cardIn { to { opacity: 1; transform: none; } }
+    .aw-card .cat { display: inline-block; font-size: 22px; letter-spacing: .35em; font-weight: 800; padding: 10px 26px 10px 32px; border-radius: 999px; margin-bottom: 30px; }
+    .aw-card.F .cat { color: #ffc6ce; background: rgba(207,20,43,.22); box-shadow: inset 0 0 0 2px rgba(255,140,155,.55); }
+    .aw-card.M .cat { color: #c9d8ff; background: rgba(27,63,155,.35); box-shadow: inset 0 0 0 2px rgba(140,170,255,.55); }
+    .aw-card .mph { position: relative; width: 400px; height: 400px; margin: 0 auto 30px; }
+    .aw-card .mph .rays { position: absolute; inset: -170px; background: repeating-conic-gradient(rgba(255,214,120,.18) 0 5deg, transparent 5deg 14deg); -webkit-mask: radial-gradient(circle, #000 18%, transparent 66%); mask: radial-gradient(circle, #000 18%, transparent 66%); animation: slowspin 40s linear infinite; }
+    .aw-card .mph .ring { position: absolute; inset: -16px; border-radius: 50%; animation: slowspin 9s linear infinite; }
+    .aw-card .mph .ph { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; box-shadow: inset 0 0 0 6px #0a1730; }
+    .aw-card .mph .ph img, .aw-card .mph .ph .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 120px; }
+    .aw-card .mnum { position: absolute; right: 10px; bottom: 10px; width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-weight: 900; font-size: 52px; color: #2a1d02; box-shadow: 0 10px 30px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,255,255,.6); }
+    .p1 .ring, .p1 .mnum { background: conic-gradient(from 0deg, #fff1c1, #b88a2e, #f3dc9a, #8a6a26, #fff1c1, #c09a43, #fff1c1); }
+    .p1 .ring { box-shadow: 0 0 90px rgba(255,204,0,.55); }
+    .p2 .ring, .p2 .mnum { background: conic-gradient(from 0deg, #ffffff, #8d97a8, #e8ecf2, #6f7889, #ffffff, #aab3c2, #ffffff); }
+    .p2 .ring { box-shadow: 0 0 70px rgba(220,230,255,.4); }
+    .p3 .ring, .p3 .mnum { background: conic-gradient(from 0deg, #f6c8a0, #8d5428, #e9a978, #6e3f1c, #f6c8a0, #b0703c, #f6c8a0); }
+    .p3 .ring { box-shadow: 0 0 70px rgba(233,169,120,.45); }
+    .aw-card .g { font-size: 26px; letter-spacing: .22em; color: var(--silver-300); font-weight: 700; text-transform: uppercase; }
+    .aw-card .n { font-family: var(--font-display); font-weight: 900; font-size: 58px; line-height: 1.08; margin: 8px 0 16px; }
+    .aw-card .sc { display: inline-flex; gap: 14px; align-items: baseline; padding: 12px 34px; border-radius: 999px; background: rgba(5,12,27,.6); box-shadow: inset 0 0 0 1.5px rgba(214,178,94,.45); font-size: 26px; font-weight: 700; }
+    .aw-card .sc b { font-family: var(--font-display); font-size: 38px; color: var(--gold-200); }
+    .aw-card.none .n { color: var(--silver-500); }
+    .aw-card .tb { margin-top: 14px; font-size: 20px; letter-spacing: .14em; color: var(--ve-yellow); font-weight: 700; text-transform: uppercase; }
+    .finals { position: absolute; left: 40px; right: 40px; top: 210px; bottom: 0; display: flex; gap: 60px; }
+    .fpod { flex: 1; display: flex; flex-direction: column; }
+    .fpod .cat { text-align: center; font-size: 24px; letter-spacing: .4em; font-weight: 800; margin-bottom: 10px; }
+    .fpod.F .cat { color: #ffc6ce; } .fpod.M .cat { color: #c9d8ff; }
+    .fpod .row3 { flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 22px; }
+    .fpod .pod { width: 270px; }
+    .fpod .pod .ph { width: 150px; height: 150px; }
+    .fpod .pod.p1 .ph { width: 200px; height: 200px; }
+    .fpod .pod .n { font-size: 26px; }
+    .fpod .pod.p1 .n { font-size: 30px; }
+    .fpod .pod .g { font-size: 14px; }
+    .fpod .pod .p { font-size: 22px; }
+    .fpod .pod .block { font-size: 84px; padding-top: 14px; }
+    .fpod .pod.p1 .block { height: 300px; } .fpod .pod.p2 .block { height: 210px; } .fpod .pod.p3 .block { height: 150px; }
+    .pcard.trib img, .pcard.trib .avatar-fallback { filter: grayscale(.9) sepia(.25); }
+    .pcard .tribtag { position: absolute; top: 10px; right: 10px; z-index: 2; background: #0b0b0d; color: var(--gold-200); font-size: .55em; letter-spacing: .14em; font-weight: 800; padding: 4px 10px; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(214,178,94,.6); }
+
     /* ---------- Controles flotantes ---------- */
     .hud { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; z-index: 50; transition: opacity .4s; }
     body.idle-mouse .hud { opacity: 0; pointer-events: none; }
@@ -230,7 +308,7 @@
       <section class="scene" id="s-vivo">
         <div class="topbar">
           <img class="logo" src="/img/logo-256.webp" alt="">
-          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span>RESULTADOS EN VIVO</span><div class="tricolor-line"></div></div></div>
+          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span>VOZ DE LA AUDIENCIA · EN VIVO</span><div class="tricolor-line"></div></div></div>
           <div class="right">
             <span class="live" id="liveBadge"><i></i><span>EN VIVO</span></span>
             <div class="count-box"><div class="lbl" id="clockLbl">TIEMPO RESTANTE</div><div class="val" id="clockVal">--:--</div></div>
@@ -250,7 +328,7 @@
       <!-- GANADOR -->
       <section class="scene" id="s-ganador">
         <div class="spot l"></div><div class="spot r"></div>
-        <div class="reveal-pre" id="pre"><div><h2 class="gold-text">Y el ganador es…</h2><div class="cd gold-text" id="cd"></div></div></div>
+        <div class="reveal-pre" id="pre"><div><h2 class="gold-text">La Voz de la Audiencia es…</h2><div class="cd gold-text" id="cd"></div></div></div>
         <div class="winner" id="winner"></div>
       </section>
 
@@ -258,9 +336,24 @@
       <section class="scene" id="s-podio">
         <div class="topbar">
           <img class="logo" src="/img/logo-256.webp" alt="">
-          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span>PODIO DE HONOR</span><div class="tricolor-line"></div></div></div>
+          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span>PODIO · VOZ DE LA AUDIENCIA</span><div class="tricolor-line"></div></div></div>
         </div>
         <div class="podium" id="podium"></div>
+      </section>
+
+      <!-- HOMENAJE -->
+      <section class="scene" id="s-homenaje">
+        <div class="wrapT" id="tribWrap"></div>
+        <div class="candles"><i class="cnd"></i><i class="cnd"></i><i class="cnd"></i><i class="cnd"></i><i class="cnd"></i><i class="cnd"></i><i class="cnd"></i></div>
+      </section>
+
+      <!-- VIDEO -->
+      <section class="scene" id="s-video"><video id="vid" playsinline preload="auto"></video></section>
+
+      <!-- PREMIACIÓN DEL JURADO -->
+      <section class="scene" id="s-premiacion">
+        <div class="spot l"></div><div class="spot r"></div>
+        <div id="award"></div>
       </section>
     </div>
   </div>
@@ -342,7 +435,7 @@
       $('#esperaState').innerHTML = st === 'open' ? `<span class="live"><i></i>VOTACIÓN ABIERTA</span>` : st === 'closed' ? `<span class="live off"><i></i>VOTACIÓN CERRADA</span>` : `<span class="live off"><i></i>PRÓXIMAMENTE</span>`;
       $('#esperaTag').textContent = st === 'open' ? '¡Vota por tu favorito!' : st === 'closed' ? '¡Gracias por votar!' : `${S.title}`;
       $('#esperaTag').style.fontSize = st === 'idle' || st === 'scheduled' ? '34px' : '';
-      const ps = S.participants;
+      const ps = S.participants.filter((p) => !p.tribute);
       const key = ps.map((p) => p.id + p.photo + p.nombre).join();
       const tr = $('#marquee');
       if (tr.dataset.key !== key) {
@@ -356,7 +449,7 @@
     /* ---- PARTICIPANTES ---- */
     function renderGallery() {
       const ps = S.participants, n = ps.length, g = $('#gallery');
-      const key = ps.map((p) => p.id + p.photo + p.nombre + p.apellidos + p.grado).join();
+      const key = ps.map((p) => p.id + p.photo + p.nombre + p.apellidos + p.grado + p.tribute).join();
       if (g.dataset.key === key) return; g.dataset.key = key;
       if (!n) { g.innerHTML = ''; return; }
       // calcula columnas para que quepan en 1800x840 con proporción 3:4
@@ -370,7 +463,7 @@
       g.style.gridTemplateColumns = `repeat(${best.c}, ${w}px)`;
       g.style.gridAutoRows = h + 'px';
       g.style.fontSize = Math.max(13, Math.min(30, w / 9)) + 'px';
-      g.innerHTML = ps.map((p, i) => `<div class="pcard" style="animation-delay:${i * 70}ms">${FV.photoHtml(p)}<span class="no">${p.number}</span><div class="meta">${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n">${FV.esc(p.nombre)}<br>${FV.esc(p.apellidos)}</div></div></div>`).join('');
+      g.innerHTML = ps.map((p, i) => `<div class="pcard ${p.tribute ? 'trib' : ''}" style="animation-delay:${i * 70}ms">${FV.photoHtml(p)}<span class="no">${p.number}</span>${p.tribute ? '<span class="tribtag">IN MEMORIAM</span>' : ''}<div class="meta">${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n">${FV.esc(p.nombre)}<br>${FV.esc(p.apellidos)}</div></div></div>`).join('');
       if (mode === 'participantes') { const s = $('#s-participantes'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on'); }
     }
 
@@ -497,7 +590,7 @@
       const res = (p) => `<div class="res panel"><span><b>${p.pct.toFixed(1)}%</b>de los votos</span>${S.screen.showCounts ? `<span><b>${p.votes}</b>${p.votes === 1 ? 'voto' : 'votos'}</span>` : ''}</div>`;
       if (ws.length === 1) {
         const p = ws[0];
-        win.innerHTML = `<div><div class="kick">🏆 GANADOR · ${FV.esc(S.year)} 🏆</div><div class="medal"><div class="rays"></div><div class="ring"></div><div class="ph">${FV.photoHtml(p)}</div></div>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n gold-text">${FV.esc(FV.fullName(p))}</div>${res(p)}</div>`;
+        win.innerHTML = `<div><div class="kick">★ VOZ DE LA AUDIENCIA · ${FV.esc(S.year)} ★</div><div class="medal"><div class="rays"></div><div class="ring"></div><div class="ph">${FV.photoHtml(p)}</div></div>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n gold-text">${FV.esc(FV.fullName(p))}</div>${res(p)}</div>`;
       } else {
         win.innerHTML = `<div><div class="kick">🏆 ¡EMPATE EN EL PRIMER LUGAR! 🏆</div><div class="multi">${ws.slice(0, 4).map((p) => `<div><div class="medal"><div class="ring"></div><div class="ph">${FV.photoHtml(p)}</div></div></div>`).join('')}</div><div class="n gold-text">${ws.map((p) => FV.esc(FV.fullName(p))).join(' · ')}</div>${res(ws[0])}</div>`;
       }
@@ -512,27 +605,81 @@
       revealTimers.push(setTimeout(() => { cymbal(); FV.confetti({ duration: 5000, count: 220 }); }, 2400));
     }
 
+    /* ---- HOMENAJE ---- */
+    function renderTribute() {
+      const ts = S.participants.filter((p) => p.tribute);
+      const multi = ts.length > 1;
+      $('#tribWrap').innerHTML = ts.slice(0, 3).map((p) => `<div class="trib ${multi ? 'multi' : ''}">
+        <div class="frame">${FV.photoHtml(p)}<span class="rib">IN MEMORIAM</span></div>
+        <div class="txt"><div class="kick">HOMENAJE PÓSTUMO</div><h2 class="gold-text">${FV.esc(FV.fullName(p))}</h2>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}
+        ${!multi ? `<div class="d">${FV.esc(p.descripcion || 'Su voz y su servicio permanecen en nuestra memoria. Este festival también le pertenece.')}</div>` : ''}</div></div>`).join('');
+      const s = $('#s-homenaje'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on');
+    }
+
+    /* ---- VIDEO ---- */
+    function enterVideo() {
+      const v = $('#vid');
+      if (!S.video) return;
+      if (v.getAttribute('src') !== S.video) v.src = S.video;
+      v.currentTime = 0; v.muted = false;
+      v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+    }
+
+    /* ---- PREMIACIÓN DEL JURADO ---- */
+    const PLACE = { 1: 'Primer Lugar', 2: 'Segundo Lugar', 3: 'Tercer Lugar' };
+    const GN = { F: 'VOZ FEMENINA', M: 'VOZ MASCULINA' };
+    function awCard(g, w, n) {
+      if (!w) return `<div class="aw-card ${g} p${n} none"><div class="cat">${GN[g]}</div><div class="mph"><div class="ring"></div><div class="ph"><div class="avatar-fallback">—</div></div></div><div class="n">Puesto desierto</div></div>`;
+      return `<div class="aw-card ${g} p${n}"><div class="cat">${GN[g]}</div><div class="mph">${n === 1 ? '<div class="rays"></div>' : ''}<div class="ring"></div><div class="ph">${FV.photoHtml(w)}</div><span class="mnum">${n}</span></div>${w.grado ? `<div class="g">${FV.esc(w.grado)}</div>` : ''}<div class="n gold-text">${FV.esc(FV.fullName(w))}</div><div class="sc"><b>${w.pct.toFixed(1)}%</b>de la puntuación del jurado</div>${w.tiebreak ? '<div class="tb">★ Definido por desempate del jurado</div>' : ''}</div>`;
+    }
+    function runAward() {
+      revealTimers.forEach(clearTimeout); revealTimers = [];
+      const A = S.awards; if (!A) return;
+      const box = $('#award'), step = A.step;
+      const at = (g, n) => (A.winners[g] || []).find((w) => w.position === n);
+      if (step === 0) {
+        const pod = (g) => `<div class="fpod ${g}"><div class="cat">${GN[g]}</div><div class="row3">${[[2, 'p2'], [1, 'p1'], [3, 'p3']].map(([n, cls]) => { const w = at(g, n); return w ? `<div class="pod ${cls}"><div class="who"><div class="ph">${FV.photoHtml(w)}</div>${w.grado ? `<div class="g">${FV.esc(w.grado)}</div>` : ''}<div class="n">${FV.esc(FV.fullName(w))}</div><div class="p">${w.pct.toFixed(1)}%${w.tiebreak ? ' ★' : ''}</div></div><div class="block">${n}</div></div>` : `<div class="pod ${cls}"></div>`; }).join('')}</div></div>`;
+        box.innerHTML = `<div class="aw-title"><div class="kick">PREMIACIÓN DEL JURADO · ${FV.esc(S.year)}</div><h2 class="gold-text in">Ganadores</h2></div><div class="finals">${pod('F')}${pod('M')}</div>`;
+        const s = $('#s-premiacion'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on');
+        revealTimers.push(setTimeout(() => { cymbal(); chord(); FV.confetti({ duration: 8000, count: 320 }); }, 2400));
+        return;
+      }
+      box.innerHTML = `<div class="aw-title"><div class="kick">PREMIACIÓN DEL JURADO · ${FV.esc(S.year)}</div><h2 class="gold-text" id="awT">${PLACE[step]}</h2></div><div class="aw-cards">${awCard('F', at('F', step), step)}${awCard('M', at('M', step), step)}</div>`;
+      revealTimers.push(setTimeout(() => $('#awT').classList.add('in'), 200));
+      drumroll(3.4);
+      revealTimers.push(setTimeout(() => {
+        box.querySelectorAll('.aw-card').forEach((c) => c.classList.add('in'));
+        cymbal(); if (step === 1) chord();
+        FV.confetti({ duration: step === 1 ? 10000 : 5000, count: step === 1 ? 360 : 200, colors: step === 1 ? undefined : step === 2 ? ['#ffffff', '#c9d0dc', '#8d97a8', '#f3dc9a'] : ['#f6c8a0', '#b0703c', '#e9a978', '#f3dc9a'] });
+      }, 3500));
+      if (step === 1) revealTimers.push(setTimeout(() => FV.confetti({ duration: 6000, count: 220 }), 13500));
+    }
+
     /* ---- render general ---- */
     function render() {
       if (!S) return;
       titleSet();
       const m = S.screen.mode;
-      const enteringReveal = (m === 'ganador' || m === 'podio') && S.screen.revealAt !== lastReveal;
+      const reveal = S.screen.revealAt !== lastReveal;
+      const prevMode = mode;
       switchScene(m);
       renderEspera();
       renderGallery();
       renderBoard();
-      if (enteringReveal) {
+      if (prevMode === 'video' && m !== 'video') $('#vid').pause();
+      if (m === 'video' && prevMode !== 'video') enterVideo();
+      if (['ganador', 'podio', 'premiacion', 'homenaje'].includes(m) && (reveal || prevMode !== m)) {
         lastReveal = S.screen.revealAt;
         revealTimers.forEach(clearTimeout); revealTimers = [];
-        if (m === 'ganador') runReveal(); else renderPodium();
+        if (m === 'ganador') runReveal(); else if (m === 'podio') renderPodium(); else if (m === 'premiacion') runAward(); else renderTribute();
       } else if (m === 'ganador' && $('#winner').classList.contains('show')) renderWinner();
     }
 
     const socket = io({ auth: { role: 'screen', k: key, token } });
     socket.on('screen', (s) => { FV.syncClock(s.now); S = s; R = s.results; $('#denied').classList.remove('show'); render(); });
     socket.on('results', (r) => { R = r; if (S) { renderBoard(); if (mode === 'ganador' && $('#winner').classList.contains('show')) renderWinner(); } });
-    socket.on('state', (s) => { FV.syncClock(s.now); if (S) { S = { ...S, ...s, voting: { ...S.voting, ...s.voting } }; renderEspera(); renderGallery(); } });
+    // el estado público trae fotos ocultas cuando así se configura: la pantalla conserva las suyas
+    socket.on('state', (s) => { FV.syncClock(s.now); if (S) { S = { ...S, voting: { ...S.voting, ...s.voting } }; renderEspera(); } });
     socket.on('screen-denied', () => $('#denied').classList.add('show'));
   })();
   </script>

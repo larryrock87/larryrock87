@@ -20,4 +20,4 @@ services:
     disk:
       name: datos-festival
       mountPath: /var/data
-      sizeGB: 1
+      sizeGB: 2          # fotos, audios MP3 y video

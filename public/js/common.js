@@ -101,6 +101,66 @@
     c._raf = requestAnimationFrame(frame);
   };
 
+
+  /* Reproductor de audio compartido: solo suena una voz a la vez.
+     Marcado: <div class="aplayer" data-src="/uploads/x.mp3"></div> */
+  FV.playerHtml = (src, label = 'Escuchar su voz') => src
+    ? `<div class="aplayer" data-src="${FV.esc(src)}"><button type="button" class="ap-btn" aria-label="${FV.esc(label)}"><svg viewBox="0 0 24 24" class="ap-play"><path d="M8 5v14l11-7z"/></svg><svg viewBox="0 0 24 24" class="ap-pause"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button><div class="ap-body"><div class="ap-label">${FV.esc(label)}</div><div class="ap-bar"><i></i></div></div><span class="ap-time">0:00</span><span class="ap-eq"><b></b><b></b><b></b><b></b></span></div>`
+    : '';
+  const audio = (FV.audio = new Audio());
+  audio.preload = 'none';
+  let current = null;
+  const fmt = (t) => (isFinite(t) ? `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}` : '0:00');
+  const paint = () => {
+    if (!current || !document.body.contains(current)) return;
+    current.classList.toggle('playing', !audio.paused);
+    current.querySelector('.ap-bar i').style.width = (audio.duration ? (audio.currentTime / audio.duration) * 100 : 0) + '%';
+    current.querySelector('.ap-time').textContent = fmt(audio.paused && !audio.currentTime ? audio.duration : audio.currentTime);
+  };
+  ['timeupdate', 'play', 'pause', 'loadedmetadata'].forEach((e) => audio.addEventListener(e, paint));
+  audio.addEventListener('ended', () => { if (current) { current.classList.remove('playing'); current.querySelector('.ap-bar i').style.width = '0%'; } });
+  audio.addEventListener('error', () => { if (current) { current.classList.remove('playing'); FV.toast && FV.toast('No se pudo reproducir el audio.', 'error'); } });
+  document.addEventListener('click', (e) => {
+    const bar = e.target.closest('.aplayer .ap-bar');
+    const pl = e.target.closest('.aplayer');
+    if (!pl) return;
+    const src = pl.dataset.src;
+    if (bar && current === pl && audio.duration) {
+      const r = bar.getBoundingClientRect();
+      audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+      return;
+    }
+    if (!e.target.closest('.ap-btn')) return;
+    if (current === pl && !audio.paused) { audio.pause(); return; }
+    if (current !== pl) {
+      if (current) { current.classList.remove('playing'); }
+      current = pl;
+      if (audio.getAttribute('src') !== src) audio.src = src;
+    }
+    audio.play().catch(() => {});
+  });
+  FV.stopAudio = () => audio.pause();
+
+  /* Notas musicales flotantes de fondo */
+  FV.notes = (el, count = 22) => {
+    if (!el) return;
+    const glyphs = ['♪', '♫', '♬', '♩', '𝄞'];
+    el.innerHTML = Array.from({ length: count }, () => {
+      const g = glyphs[(Math.random() * glyphs.length) | 0];
+      const size = 14 + Math.random() * 34;
+      return `<span style="left:${Math.random() * 100}%;font-size:${size}px;animation-duration:${14 + Math.random() * 18}s;animation-delay:${-Math.random() * 30}s;--sway:${(Math.random() * 80 - 40).toFixed(0)}px;--rot:${(Math.random() * 60 - 30).toFixed(0)}deg;opacity:${(0.25 + Math.random() * 0.5).toFixed(2)}">${g}</span>`;
+    }).join('');
+  };
+
+  FV.genderName = { F: 'Voz Femenina', M: 'Voz Masculina' };
+  FV.timeAgo = (t) => {
+    const s = Math.max(1, Math.round((Date.now() - t) / 1000));
+    if (s < 60) return 'hace un momento';
+    if (s < 3600) return `hace ${Math.round(s / 60)} min`;
+    if (s < 86400) return `hace ${Math.round(s / 3600)} h`;
+    return new Date(t).toLocaleDateString('es-VE', { day: '2-digit', month: 'short' });
+  };
+
   FV.toast = (msg, type = 'info') => {
     let wrap = document.getElementById('fv-toasts');
     if (!wrap) {

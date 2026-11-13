@@ -4,86 +4,210 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0a1730">
-  <title>Votación · Festival de la Voz</title>
+  <meta name="description" content="Festival de la Voz Ministerial 2026 — Primera Edición. Conoce a los participantes, escucha sus voces y vota por la Voz de la Audiencia.">
+  <title>Festival de la Voz Ministerial 2026</title>
   <link rel="icon" href="/img/favicon.png">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/css/theme.css">
   <style>
-    body { padding-bottom: env(safe-area-inset-bottom); }
-    .wrap { width: min(1100px, 100%); margin: 0 auto; padding: 0 16px 60px; }
+    html { scroll-behavior: smooth; }
+    body { padding-bottom: env(safe-area-inset-bottom); overflow-x: hidden; }
+    .wrap { width: min(1180px, 100%); margin: 0 auto; padding: 0 16px; }
+    section { position: relative; }
 
-    header.hero { text-align: center; padding: 28px 8px 8px; }
-    .logo-wrap { width: 132px; height: 132px; margin: 0 auto 14px; position: relative; }
-    .logo-wrap img { width: 100%; height: 100%; border-radius: 50%; animation: float 6s ease-in-out infinite; filter: drop-shadow(0 10px 30px rgba(214,178,94,.35)); }
-    .logo-wrap::after { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 1px solid rgba(214,178,94,.35); animation: pulse 3s ease-out infinite; }
-    @keyframes float { 50% { transform: translateY(-6px); } }
-    @keyframes pulse { from { transform: scale(.92); opacity: 1; } to { transform: scale(1.25); opacity: 0; } }
-    .hero h1 { margin: 0; font-size: clamp(1.3rem, 5.4vw, 2.4rem); line-height: 1.15; font-weight: 900; }
-    .hero .year { font-family: var(--font-display); font-weight: 700; letter-spacing: .5em; color: var(--gold-300); margin: 6px 0 14px; font-size: .95rem; padding-left: .5em; }
-    .hero .tricolor-line { width: 140px; margin: 0 auto; }
+    /* ---------- barra superior ---------- */
+    .topnav { position: fixed; top: 0; left: 0; right: 0; z-index: 30; display: flex; align-items: center; gap: 10px; padding: 10px 16px; transition: background .3s, box-shadow .3s, transform .3s; }
+    .topnav.solid { background: rgba(5,12,27,.86); backdrop-filter: blur(12px); box-shadow: 0 1px 0 rgba(214,178,94,.25); }
+    .topnav .brand { display: flex; align-items: center; gap: 10px; opacity: 0; transition: opacity .3s; text-decoration: none; color: inherit; min-width: 0; }
+    .topnav.solid .brand { opacity: 1; }
+    .topnav .brand img { width: 38px; height: 38px; }
+    .topnav .brand b { font-family: var(--font-display); font-size: .82rem; letter-spacing: .06em; color: var(--gold-200); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .topnav .sp { flex: 1; }
+    .fanchip { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 7px 14px 7px 7px; background: rgba(10,23,48,.75); color: var(--silver-100); box-shadow: inset 0 0 0 1px rgba(214,178,94,.4); font-size: .78rem; font-weight: 600; white-space: nowrap; }
+    .fanchip i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-grad); color: #2a1d02; font-style: normal; font-weight: 800; font-size: .72rem; }
 
-    /* Estado */
-    .status { margin: 22px auto 18px; max-width: 640px; text-align: center; padding: 18px 20px; }
-    .status h2 { margin: 0 0 4px; font-family: var(--font-display); font-size: 1.15rem; color: var(--gold-200); letter-spacing: .06em; }
-    .status p { margin: 0; color: var(--silver-300); font-size: .92rem; line-height: 1.5; }
-    .notes { display: inline-flex; gap: 6px; margin-bottom: 6px; font-size: 1.3rem; color: var(--gold-300); }
-    .notes span { animation: note 1.6s ease-in-out infinite; display: inline-block; }
-    .notes span:nth-child(2) { animation-delay: .2s; } .notes span:nth-child(3) { animation-delay: .4s; }
-    @keyframes note { 50% { transform: translateY(-6px); opacity: .6; } }
-
-    /* Barra de tiempo (solo con votación abierta) */
-    .timer { position: sticky; top: 0; z-index: 20; margin: 0 -16px 16px; padding: 10px 16px; background: rgba(5,12,27,.82); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(214,178,94,.3); display: none; }
-    .timer.show { display: block; animation: drop .5s ease; }
-    @keyframes drop { from { transform: translateY(-100%); } }
-    .timer-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 1100px; margin: 0 auto; }
-    .live-dot { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: .78rem; letter-spacing: .18em; color: #fff; }
-    .live-dot i { width: 10px; height: 10px; border-radius: 50%; background: var(--ve-red); box-shadow: 0 0 0 0 rgba(207,20,43,.7); animation: live 1.4s infinite; }
-    @keyframes live { 70% { box-shadow: 0 0 0 10px rgba(207,20,43,0); } 100% { box-shadow: 0 0 0 0 rgba(207,20,43,0); } }
-    .clock { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .clock.urgent { color: #ff8a95; animation: blink 1s steps(2) infinite; }
+    /* ---------- barra de votación abierta ---------- */
+    .timer { position: fixed; left: 0; right: 0; top: 0; z-index: 35; padding: 10px 16px; background: linear-gradient(90deg, rgba(120,8,22,.95), rgba(5,12,27,.95) 40%); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(214,178,94,.4); transform: translateY(-110%); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+    body.open .timer { transform: none; }
+    body.open .topnav { transform: translateY(58px); }
+    .timer-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 1180px; margin: 0 auto; }
+    .live-dot { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: .72rem; letter-spacing: .16em; color: #fff; }
+    .live-dot i { width: 10px; height: 10px; border-radius: 50%; background: #ff4d61; animation: live 1.4s infinite; }
+    @keyframes live { 0% { box-shadow: 0 0 0 0 rgba(255,77,97,.8); } 70% { box-shadow: 0 0 0 10px rgba(255,77,97,0); } 100% { box-shadow: 0 0 0 0 rgba(255,77,97,0); } }
+    .clock { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .clock.urgent { color: #ff9aa6; animation: blink 1s steps(2) infinite; }
     @keyframes blink { 50% { opacity: .55; } }
-    .timebar { height: 4px; border-radius: 4px; background: rgba(255,255,255,.08); margin: 8px auto 0; max-width: 1100px; overflow: hidden; }
+    .timebar { height: 3px; border-radius: 3px; background: rgba(255,255,255,.1); margin: 7px auto 0; max-width: 1180px; overflow: hidden; }
     .timebar > div { height: 100%; background: var(--gold-grad); transition: width 1s linear; }
 
-    .search { display: flex; justify-content: center; margin: 4px 0 18px; }
+    /* ---------- portada ---------- */
+    .hero { position: relative; min-height: 100svh; display: grid; place-items: center; text-align: center; padding: 90px 16px 60px; overflow: hidden; }
+    .hero .staff { position: absolute; left: -10%; width: 120%; top: 50%; height: 220px; transform: translateY(-50%); opacity: .5; pointer-events: none; }
+    .hero .staff path { fill: none; stroke: rgba(214,178,94,.22); stroke-width: 1.2; }
+    .hero .staff g { animation: wave 9s ease-in-out infinite alternate; }
+    @keyframes wave { to { transform: translateX(-60px); } }
+    .hero-inner { position: relative; z-index: 2; max-width: 900px; }
+    .crest { position: relative; width: min(300px, 64vw); aspect-ratio: 1; margin: 0 auto 26px; }
+    .crest::before { content: ''; position: absolute; inset: -18%; border-radius: 50%; background: radial-gradient(circle, rgba(243,220,154,.35), transparent 62%); animation: glow 5s ease-in-out infinite; }
+    .crest::after { content: ''; position: absolute; inset: -9%; border-radius: 50%; border: 1px dashed rgba(214,178,94,.45); animation: slowspin 50s linear infinite; }
+    .crest img { position: relative; width: 100%; height: 100%; filter: drop-shadow(0 25px 50px rgba(0,0,0,.6)); animation: float 7s ease-in-out infinite; }
+    @keyframes glow { 50% { transform: scale(1.08); opacity: .7; } }
+    @keyframes float { 50% { transform: translateY(-10px) rotate(-1.5deg); } }
+    .edition { display: inline-flex; align-items: center; gap: 12px; font-size: .72rem; letter-spacing: .42em; font-weight: 800; color: var(--gold-200); text-transform: uppercase; margin-bottom: 14px; padding-left: .42em; }
+    .edition::before, .edition::after { content: ''; width: 34px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-300)); }
+    .edition::after { transform: scaleX(-1); }
+    .hero h1 { margin: 0; font-size: clamp(1.9rem, 6.4vw, 4.2rem); line-height: 1.05; font-weight: 900; }
+    .hero .year { font-family: var(--font-display); font-weight: 900; font-size: clamp(2.6rem, 10vw, 6rem); line-height: 1; margin: 6px 0 12px; letter-spacing: .12em; background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero .tagline { max-width: 640px; margin: 0 auto 26px; color: var(--silver-300); font-size: clamp(.95rem, 2.6vw, 1.12rem); line-height: 1.6; }
+    .hero .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero .btn { padding: 1em 1.8em; }
+    .scroll-cue { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); width: 26px; height: 42px; border-radius: 14px; box-shadow: inset 0 0 0 2px rgba(214,178,94,.55); z-index: 2; }
+    .scroll-cue::after { content: ''; position: absolute; left: 50%; top: 8px; width: 4px; height: 8px; margin-left: -2px; border-radius: 2px; background: var(--gold-300); animation: cue 1.8s ease-in-out infinite; }
+    @keyframes cue { 60% { transform: translateY(12px); opacity: 0; } 100% { opacity: 0; } }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s ease, transform .9s cubic-bezier(.2,.8,.2,1); }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* ---------- acerca de ---------- */
+    .about { padding: 70px 0 30px; }
+    .about-card { position: relative; padding: clamp(26px, 5vw, 56px); text-align: center; overflow: hidden; }
+    .about-card::before { content: '𝄞'; position: absolute; left: -10px; top: -40px; font-size: 220px; color: rgba(214,178,94,.06); line-height: 1; pointer-events: none; }
+    .about-card::after { content: '♫'; position: absolute; right: 10px; bottom: -50px; font-size: 200px; color: rgba(214,178,94,.06); pointer-events: none; }
+    .eyebrow { font-size: .7rem; letter-spacing: .36em; font-weight: 800; color: var(--gold-300); text-transform: uppercase; margin-bottom: 12px; }
+    .about h2 { margin: 0 0 18px; font-size: clamp(1.4rem, 4vw, 2.3rem); }
+    .about p { position: relative; max-width: 780px; margin: 0 auto; font-size: clamp(1rem, 2.4vw, 1.2rem); line-height: 1.85; color: var(--silver-100); font-weight: 400; white-space: pre-line; }
+    .pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-top: 34px; }
+    .pillar { padding: 18px 12px; border-radius: 16px; background: rgba(5,12,27,.45); box-shadow: inset 0 0 0 1px rgba(214,178,94,.22); }
+    .pillar b { display: block; font-family: var(--font-display); font-size: 1.9rem; color: var(--gold-200); }
+    .pillar span { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--silver-300); font-weight: 700; }
+
+    /* ---------- video ---------- */
+    .video-sec { padding: 30px 0; }
+    .video-frame { position: relative; border-radius: 22px; overflow: hidden; box-shadow: 0 0 0 1px rgba(214,178,94,.5), 0 0 0 8px rgba(214,178,94,.08), 0 30px 80px -20px rgba(0,0,0,.8); background: #000; aspect-ratio: 16/9; max-width: 960px; margin: 0 auto; }
+    .video-frame video { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+    /* ---------- estado de la votación ---------- */
+    .status { margin: 40px auto 10px; max-width: 720px; text-align: center; padding: 22px; }
+    .status h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 1.2rem; color: var(--gold-200); letter-spacing: .05em; }
+    .status p { margin: 0; color: var(--silver-300); font-size: .93rem; line-height: 1.55; }
+    .status .ic { font-size: 1.5rem; margin-bottom: 6px; color: var(--gold-300); }
+
+    /* ---------- homenaje ---------- */
+    .tribute-sec { padding: 40px 0 10px; }
+    .tribute { display: grid; grid-template-columns: minmax(0, 340px) 1fr; gap: clamp(18px, 4vw, 42px); align-items: center; padding: clamp(20px, 4vw, 40px); position: relative; overflow: hidden; background: radial-gradient(circle at 20% 30%, rgba(214,178,94,.14), transparent 55%), linear-gradient(180deg, rgba(12,16,28,.9), rgba(5,8,16,.95)); }
+    @media (max-width: 720px) { .tribute { grid-template-columns: 1fr; text-align: center; } }
+    .tribute .ph { position: relative; aspect-ratio: 3/4; border-radius: 18px; overflow: hidden; box-shadow: 0 0 0 3px rgba(214,178,94,.7), 0 0 50px rgba(214,178,94,.25); max-width: 340px; margin: 0 auto; width: 100%; }
+    .tribute .ph img, .tribute .ph .avatar-fallback { width: 100%; height: 100%; object-fit: cover; filter: grayscale(.85) sepia(.25) brightness(.95); font-size: 4rem; }
+    .ribbon { position: absolute; top: 14px; right: -42px; z-index: 2; transform: rotate(45deg); background: #0b0b0d; color: var(--gold-200); font-size: .62rem; font-weight: 800; letter-spacing: .18em; padding: 7px 50px; box-shadow: 0 4px 12px rgba(0,0,0,.6); border-top: 1px solid rgba(214,178,94,.5); border-bottom: 1px solid rgba(214,178,94,.5); }
+    .tribute .kick { font-size: .7rem; letter-spacing: .4em; font-weight: 800; color: var(--gold-300); text-transform: uppercase; }
+    .tribute h3 { font-family: var(--font-display); font-size: clamp(1.6rem, 4.5vw, 2.6rem); margin: 8px 0 4px; line-height: 1.1; }
+    .tribute .g { color: var(--silver-300); letter-spacing: .14em; text-transform: uppercase; font-size: .78rem; font-weight: 700; }
+    .tribute .desc { color: var(--silver-100); line-height: 1.7; margin: 16px 0; font-style: italic; }
+    .tribute .acts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    @media (max-width: 720px) { .tribute .acts { justify-content: center; } }
+    .candle { display: inline-block; width: 12px; height: 18px; position: relative; margin-right: 4px; vertical-align: -3px; }
+    .candle::before { content: ''; position: absolute; left: 3px; bottom: 0; width: 6px; height: 10px; background: #f3ead6; border-radius: 1px; }
+    .candle::after { content: ''; position: absolute; left: 3px; top: 0; width: 6px; height: 9px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: radial-gradient(circle at 50% 70%, #fff6c8, #ffb300 60%, transparent 70%); animation: flicker 1.3s ease-in-out infinite alternate; }
+    @keyframes flicker { 50% { transform: scale(.85, 1.1) rotate(-3deg); opacity: .85; } }
+
+    /* ---------- participantes ---------- */
+    .parts-sec { padding: 50px 0 40px; }
+    .sec-head { text-align: center; margin-bottom: 22px; }
+    .sec-head h2 { margin: 0; font-size: clamp(1.5rem, 4.5vw, 2.5rem); }
+    .filters { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 18px 0 12px; }
+    .filters button { border: 0; border-radius: 999px; padding: 9px 16px; font-weight: 700; font-size: .78rem; letter-spacing: .06em; background: rgba(10,23,48,.7); color: var(--silver-300); box-shadow: inset 0 0 0 1px rgba(214,178,94,.3); }
+    .filters button.on { background: var(--gold-grad); color: #2a1d02; }
+    .search { display: flex; justify-content: center; margin: 0 0 22px; }
     .search input { width: min(420px, 100%); background: rgba(10,23,48,.7); border: 1px solid rgba(214,178,94,.35); color: #fff; padding: 12px 18px; border-radius: 999px; font: inherit; outline: none; }
-    .search input:focus { border-color: var(--gold-300); box-shadow: 0 0 0 3px rgba(214,178,94,.15); }
+    .search input:focus { border-color: var(--gold-300); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 20px; }
+    @media (max-width: 560px) { .grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
+    .card { position: relative; border-radius: 20px; overflow: hidden; background: linear-gradient(180deg, var(--navy-800), var(--navy-900)); box-shadow: var(--shadow-gold); display: flex; flex-direction: column; transition: transform .35s, box-shadow .35s, filter .4s; }
+    @media (hover: hover) and (pointer: fine) {
+      .card:hover { transform: translateY(-4px); box-shadow: 0 0 0 1px rgba(214,178,94,.6), 0 20px 50px -15px rgba(0,0,0,.8), 0 0 40px -10px rgba(214,178,94,.45); }
+      }
+    .card .ph { position: relative; aspect-ratio: 4/5; overflow: hidden; }
+    .card .ph img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s; }
+    .card:hover .ph img { transform: scale(1.05); }
+    .card .ph .avatar-fallback { width: 100%; height: 100%; font-size: 3.2rem; flex-direction: column; gap: 8px; }
+    .card .ph .avatar-fallback small { font-family: var(--font-body); font-size: .7rem; letter-spacing: .2em; color: var(--silver-300); }
+    .card .ph::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(5,12,27,.92)); pointer-events: none; }
+    .num { position: absolute; top: 12px; left: 12px; z-index: 2; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-weight: 900; color: #2a1d02; background: var(--gold-grad); box-shadow: 0 4px 12px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.7); }
+    .card .chip-gender { position: absolute; top: 16px; right: 12px; z-index: 2; backdrop-filter: blur(6px); }
+    .card .ttl { position: absolute; left: 14px; right: 14px; bottom: 12px; z-index: 2; }
+    .grado { font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold-300); font-weight: 700; margin-bottom: 3px; }
+    .name { font-family: var(--font-display); font-weight: 700; font-size: 1.12rem; line-height: 1.15; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.8); }
+    .card .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .song { font-size: .8rem; color: var(--silver-300); font-style: italic; }
+    .song b { color: var(--gold-200); font-style: normal; font-weight: 600; }
+    .acts { display: flex; gap: 8px; align-items: center; }
+    .act { display: inline-flex; align-items: center; gap: 6px; border: 0; background: rgba(255,255,255,.06); color: var(--silver-100); border-radius: 999px; padding: 8px 12px; font-weight: 700; font-size: .82rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); transition: transform .15s, background .2s; }
+    .act:active { transform: scale(.94); }
+    .act svg { width: 18px; height: 18px; }
+    .act.like svg { fill: none; stroke: currentColor; stroke-width: 2; }
+    .act.like.on { color: #ff5d79; background: rgba(255,93,121,.12); }
+    .act.like.on svg { fill: currentColor; animation: heart .5s; }
+    @keyframes heart { 40% { transform: scale(1.4); } }
+    .act.cm svg { fill: none; stroke: currentColor; stroke-width: 2; }
+    .card .vote { display: none; width: 100%; margin-top: auto; }
+    body.open:not(.voted) .card:not(.trib) .vote { display: block; }
+    body.voted .grid .card:not(.mine) { filter: saturate(.55) brightness(.75); }
+    .card.mine { box-shadow: 0 0 0 3px var(--gold-300), 0 0 50px rgba(214,178,94,.5); }
+    .mine-badge { display: none; position: absolute; top: 60px; left: 12px; z-index: 3; background: var(--gold-grad); color: #2a1d02; font-weight: 800; font-size: .62rem; letter-spacing: .1em; padding: 6px 10px; border-radius: 999px; text-transform: uppercase; }
+    .card.mine .mine-badge { display: block; }
+    @media (max-width: 560px) {
+      .card .ttl { left: 10px; right: 10px; bottom: 8px; }
+      .name { font-size: .92rem; }
+      .card .body { padding: 10px; gap: 8px; }
+      .num { width: 32px; height: 32px; font-size: .8rem; top: 8px; left: 8px; }
+      .card .chip-gender { top: 10px; right: 8px; font-size: .5rem; padding: 4px 7px; }
+      .aplayer { padding: 5px 8px 5px 5px; gap: 6px; }
+      .aplayer .ap-btn { width: 32px; height: 32px; }
+      .aplayer .ap-label { display: none; }
+      .act { padding: 7px 9px; font-size: .74rem; }
+      .song { font-size: .72rem; }
+    }
+    .empty { text-align: center; padding: 40px; color: var(--silver-300); grid-column: 1 / -1; }
 
-    /* Tarjetas */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(46%, 200px), 1fr)); gap: 14px; }
-    @media (min-width: 640px) { .grid { gap: 20px; } }
-    .card { position: relative; border-radius: var(--radius); overflow: hidden; background: var(--navy-800); box-shadow: var(--shadow-gold); transform: translateY(14px); opacity: 0; animation: rise .6s cubic-bezier(.2,.8,.2,1) forwards; transition: transform .3s, opacity .4s, filter .4s, box-shadow .3s; }
-    @keyframes rise { to { transform: none; opacity: 1; } }
-    .card .ph { aspect-ratio: 3/4; position: relative; overflow: hidden; }
-    .card .ph img, .card .ph .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 3rem; transition: transform .6s; }
-    .card:hover .ph img { transform: scale(1.04); }
-    .card .ph::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(5,12,27,.95)); }
-    .num { position: absolute; top: 10px; left: 10px; z-index: 2; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-weight: 900; color: #2a1d02; background: var(--gold-grad); box-shadow: 0 4px 12px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.7); font-size: .95rem; }
-    .info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 12px 12px 12px; }
-    .grado { font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-300); font-weight: 700; margin-bottom: 3px; }
-    .name { font-family: var(--font-display); font-weight: 700; font-size: 1rem; line-height: 1.15; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.8); }
-    .card .vote { display: none; width: 100%; margin-top: 10px; padding: .75em 1em; }
-    body.open:not(.voted) .card .vote { display: block; animation: rise .4s ease forwards; }
-    body.voted .card:not(.mine) { filter: grayscale(.7) brightness(.6); }
-    .card.mine { box-shadow: 0 0 0 3px var(--gold-300), 0 0 40px rgba(214,178,94,.6); transform: scale(1.02); }
-    .card .badge { display: none; position: absolute; top: 10px; right: 10px; z-index: 3; background: var(--gold-grad); color: #2a1d02; font-weight: 800; font-size: .66rem; letter-spacing: .1em; padding: 6px 10px; border-radius: 999px; text-transform: uppercase; }
-    .card.mine .badge { display: block; }
-
-    .empty { text-align: center; padding: 40px; color: var(--silver-300); }
-
-    /* Modal */
-    .modal { position: fixed; inset: 0; z-index: 50; display: none; place-items: center; padding: 16px; background: rgba(3,8,18,.78); backdrop-filter: blur(6px); }
+    /* ---------- hojas y modales ---------- */
+    .modal { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; padding: 16px; background: rgba(3,8,18,.78); backdrop-filter: blur(6px); }
     .modal.show { display: grid; animation: fade .25s; }
     @keyframes fade { from { opacity: 0; } }
-    .modal .box { width: min(380px, 100%); text-align: center; padding: 24px; animation: pop .35s cubic-bezier(.2,1.4,.4,1); }
-    @keyframes pop { from { transform: scale(.85); opacity: 0; } }
-    .modal .pic { width: 150px; height: 150px; margin: 0 auto 14px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 4px var(--gold-400), 0 0 40px rgba(214,178,94,.5); }
+    .modal .box { width: min(400px, 100%); text-align: center; padding: 26px 22px; animation: pop .35s cubic-bezier(.2,1.4,.4,1); }
+    @keyframes pop { from { transform: scale(.88); opacity: 0; } }
+    .modal .pic { width: 140px; height: 140px; margin: 0 auto 14px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 4px var(--gold-400), 0 0 40px rgba(214,178,94,.5); }
     .modal .pic img, .modal .pic .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 2.6rem; }
     .modal h3 { font-family: var(--font-display); margin: 0 0 6px; font-size: 1.3rem; }
-    .modal p { color: var(--silver-300); margin: 0 0 18px; font-size: .9rem; }
-    .modal .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .modal p { color: var(--silver-300); margin: 0 0 18px; font-size: .9rem; line-height: 1.5; }
+    .modal .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .field { text-align: left; margin-bottom: 12px; }
+    .field label { display: block; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-300); font-weight: 700; margin-bottom: 6px; }
+    .field input, .cform textarea { width: 100%; font: inherit; color: #fff; background: rgba(5,12,27,.7); border: 1px solid rgba(214,178,94,.35); border-radius: 12px; padding: 12px 14px; outline: none; }
+    .field input:focus, .cform textarea:focus { border-color: var(--gold-300); }
 
-    /* Gracias */
-    .thanks { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; text-align: center; padding: 24px; background: radial-gradient(circle at 50% 40%, rgba(31,63,110,.95), rgba(5,12,27,.98)); }
+    .sheet { position: fixed; inset: 0; z-index: 55; display: none; background: rgba(3,8,18,.7); backdrop-filter: blur(4px); }
+    .sheet.show { display: block; animation: fade .2s; }
+    .sheet .panel { position: absolute; left: 0; right: 0; bottom: 0; max-height: 88svh; display: flex; flex-direction: column; border-radius: 24px 24px 0 0; animation: up .35s cubic-bezier(.2,.8,.2,1); }
+    @media (min-width: 760px) { .sheet .panel { left: auto; top: 0; width: 460px; max-height: none; border-radius: 0; animation: side .35s cubic-bezier(.2,.8,.2,1); } }
+    @keyframes up { from { transform: translateY(100%); } }
+    @keyframes side { from { transform: translateX(100%); } }
+    .sheet .hd { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid rgba(214,178,94,.2); }
+    .sheet .hd .av { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex: none; box-shadow: 0 0 0 2px var(--gold-400); }
+    .sheet .hd .av img, .sheet .hd .av .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 1rem; }
+    .sheet .hd b { font-family: var(--font-display); display: block; line-height: 1.2; }
+    .sheet .hd small { color: var(--silver-300); font-size: .75rem; }
+    .sheet .hd button.x { margin-left: auto; border: 0; background: rgba(255,255,255,.08); color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 1.1rem; flex: none; }
+    .clist { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; min-height: 160px; }
+    .cmt { padding: 10px 14px; border-radius: 14px 14px 14px 4px; background: rgba(255,255,255,.06); animation: fade .3s; }
+    .cmt b { font-size: .8rem; color: var(--gold-200); }
+    .cmt small { color: var(--silver-500); font-size: .7rem; margin-left: 6px; }
+    .cmt p { margin: 4px 0 0; font-size: .92rem; line-height: 1.45; word-wrap: break-word; }
+    .cmt.pending { opacity: .65; border: 1px dashed rgba(214,178,94,.4); }
+    .cform { padding: 12px 18px 18px; border-top: 1px solid rgba(214,178,94,.2); }
+    .cform textarea { resize: none; height: 70px; }
+    .cform .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; font-size: .74rem; color: var(--silver-500); }
+    .cnote { text-align: center; color: var(--silver-300); font-size: .86rem; padding: 18px; }
+
+    .thanks { position: fixed; inset: 0; z-index: 70; display: none; place-items: center; text-align: center; padding: 24px; background: radial-gradient(circle at 50% 40%, rgba(31,63,110,.96), rgba(5,12,27,.98)); }
     .thanks.show { display: grid; animation: fade .4s; }
     .thanks .check { width: 110px; height: 110px; margin: 0 auto 18px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-grad); box-shadow: 0 0 60px rgba(214,178,94,.6); animation: pop .6s cubic-bezier(.2,1.4,.4,1); }
     .thanks .check svg { width: 56px; height: 56px; stroke: #2a1d02; stroke-width: 4; fill: none; stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw .6s .35s ease forwards; }
@@ -91,48 +215,133 @@
     .thanks h2 { font-family: var(--font-display); font-size: 1.8rem; margin: 0 0 8px; }
     .thanks p { color: var(--silver-300); margin: 0 0 22px; }
 
-    footer { text-align: center; color: var(--silver-500); font-size: .75rem; padding: 30px 0 10px; letter-spacing: .08em; }
+    footer { text-align: center; color: var(--silver-500); font-size: .74rem; padding: 50px 16px 30px; letter-spacing: .1em; }
+    footer img { width: 64px; margin: 0 auto 12px; opacity: .85; }
   </style>
 </head>
 <body>
   <div class="stage-bg"></div>
 
-  <div class="wrap">
-    <div class="timer" id="timer">
-      <div class="timer-row">
-        <span class="live-dot"><i></i> VOTACIÓN ABIERTA</span>
-        <span class="clock" id="clock">--:--</span>
-      </div>
-      <div class="timebar"><div id="timebar" style="width:100%"></div></div>
+  <div class="timer" id="timer">
+    <div class="timer-row">
+      <span class="live-dot"><i></i> VOZ DE LA AUDIENCIA · VOTACIÓN ABIERTA</span>
+      <span class="clock" id="clock"></span>
     </div>
-
-    <header class="hero">
-      <div class="logo-wrap"><img src="/img/logo-256.webp" alt="Logo del Festival"></div>
-      <h1 class="display gold-text" id="title">Festival de la Voz Ministerial del MPPD</h1>
-      <div class="year" id="year">2026</div>
-      <div class="tricolor-line"></div>
-    </header>
-
-    <section class="status panel" id="status" aria-live="polite"></section>
-
-    <div class="search" id="searchWrap" hidden>
-      <input id="search" type="search" placeholder="Buscar participante…" aria-label="Buscar participante">
-    </div>
-
-    <main class="grid" id="grid"></main>
-    <footer>FESTIVAL DE LA VOZ MINISTERIAL DEL MPPD · <span id="fyear">2026</span></footer>
+    <div class="timebar" id="timebarWrap"><div id="timebar" style="width:100%"></div></div>
   </div>
 
+  <nav class="topnav" id="topnav">
+    <a class="brand" href="#inicio"><img src="/img/logo-256.webp" alt=""><b id="navTitle">Festival de la Voz Ministerial</b></a>
+    <span class="sp"></span>
+    <button class="fanchip" id="fanchip" type="button"><i>♪</i><span>Regístrate</span></button>
+  </nav>
+
+  <!-- PORTADA -->
+  <header class="hero" id="inicio">
+    <div class="notes-bg" id="notes"></div>
+    <svg class="staff" viewBox="0 0 1600 220" preserveAspectRatio="none" aria-hidden="true"><g>
+      <path d="M0 40 C 300 0, 500 80, 800 40 S 1300 0, 1700 40"/><path d="M0 75 C 300 35, 500 115, 800 75 S 1300 35, 1700 75"/>
+      <path d="M0 110 C 300 70, 500 150, 800 110 S 1300 70, 1700 110"/><path d="M0 145 C 300 105, 500 185, 800 145 S 1300 105, 1700 145"/>
+      <path d="M0 180 C 300 140, 500 220, 800 180 S 1300 140, 1700 180"/></g></svg>
+    <div class="hero-inner">
+      <div class="crest"><img src="/img/logo.webp" alt="Logo del Festival de la Voz Ministerial del MPPD 2026"></div>
+      <div class="edition" id="edition">Primera Edición</div>
+      <h1 class="display gold-text" id="title">Festival de la Voz Ministerial</h1>
+      <div class="year" id="year">2026</div>
+      <p class="tagline" id="tagline"></p>
+      <div class="cta">
+        <a class="btn" href="#participantes">Conoce las voces</a>
+        <a class="btn ghost" href="#festival">El festival</a>
+      </div>
+    </div>
+    <span class="scroll-cue" aria-hidden="true"></span>
+  </header>
+
+  <!-- ACERCA -->
+  <section class="about" id="festival">
+    <div class="wrap">
+      <div class="about-card panel reveal">
+        <div class="eyebrow" id="aboutEyebrow">Primera Edición · 2026</div>
+        <h2 class="display gold-text">El escenario de gala del talento</h2>
+        <p id="description"></p>
+        <div class="pillars">
+          <div class="pillar"><b id="pCount">0</b><span>Voces en escena</span></div>
+          <div class="pillar"><b>♀</b><span>Voz Femenina</span></div>
+          <div class="pillar"><b>♂</b><span>Voz Masculina</span></div>
+          <div class="pillar"><b>★</b><span>Voz de la Audiencia</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="video-sec" id="videoSec" hidden>
+    <div class="wrap reveal"><div class="video-frame"><video id="video" controls playsinline preload="metadata"></video></div></div>
+  </section>
+
+  <section class="tribute-sec" id="tributeSec" hidden><div class="wrap" id="tributes"></div></section>
+
+  <!-- PARTICIPANTES -->
+  <section class="parts-sec" id="participantes">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Escucha · Apoya · Vota</div>
+        <h2 class="display gold-text">Nuestras Voces</h2>
+      </div>
+      <div class="status panel" id="status" aria-live="polite"></div>
+      <div class="filters" id="filters">
+        <button data-f="all" class="on">Todas</button>
+        <button data-f="F">Voz Femenina</button>
+        <button data-f="M">Voz Masculina</button>
+      </div>
+      <div class="search" id="searchWrap" hidden><input id="search" type="search" placeholder="Buscar participante…" aria-label="Buscar participante"></div>
+      <main class="grid" id="grid"></main>
+    </div>
+  </section>
+
+  <footer>
+    <img src="/img/logo-256.webp" alt="">
+    <div id="ftitle">FESTIVAL DE LA VOZ MINISTERIAL</div>
+    <div style="margin-top:6px;color:var(--gold-300)" id="fedition">PRIMERA EDICIÓN · 2026</div>
+  </footer>
+
+  <!-- Confirmar voto -->
   <div class="modal" id="confirm" role="dialog" aria-modal="true" aria-labelledby="cName">
     <div class="box panel">
       <div class="pic" id="cPic"></div>
       <div class="grado" id="cGrado"></div>
       <h3 id="cName"></h3>
-      <p>Confirma tu voto. <strong>Solo puedes votar una vez</strong> y no podrás cambiarlo.</p>
-      <div class="actions">
-        <button class="btn ghost" id="cCancel">Cancelar</button>
-        <button class="btn" id="cOk">Confirmar voto</button>
-      </div>
+      <p>Confirma tu voto para la <b>Voz de la Audiencia</b>. Solo puedes votar <b>una vez</b> y no podrás cambiarlo.</p>
+      <div class="row"><button class="btn ghost" id="cCancel">Cancelar</button><button class="btn" id="cOk">Confirmar voto</button></div>
+    </div>
+  </div>
+
+  <!-- Registro -->
+  <div class="modal" id="register" role="dialog" aria-modal="true" aria-labelledby="rTitle">
+    <form class="box panel" id="rForm">
+      <div style="font-size:2rem;color:var(--gold-300)">♫</div>
+      <h3 id="rTitle">Únete al festival</h3>
+      <p>Para dar <b>me gusta</b> y <b>comentar</b>, registra tu nombre y apellido. Se mostrarán junto a tus comentarios.</p>
+      <div class="field"><label for="rNombre">Nombre</label><input id="rNombre" maxlength="40" autocomplete="given-name" required></div>
+      <div class="field"><label for="rApellido">Apellido</label><input id="rApellido" maxlength="40" autocomplete="family-name" required></div>
+      <div class="row"><button class="btn ghost" type="button" id="rCancel">Ahora no</button><button class="btn" type="submit">Registrarme</button></div>
+    </form>
+  </div>
+
+  <!-- Cuenta -->
+  <div class="modal" id="account" role="dialog" aria-modal="true">
+    <div class="box panel">
+      <h3 id="accName"></h3>
+      <p>Estás registrado para dar me gusta y comentar.</p>
+      <div class="row"><button class="btn ghost" id="accOut">No soy yo</button><button class="btn" id="accOk">Cerrar</button></div>
+    </div>
+  </div>
+
+  <!-- Comentarios -->
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shName">
+    <div class="panel">
+      <div class="hd"><div class="av" id="shAv"></div><div><b id="shName"></b><small id="shSub"></small></div><button class="x" id="shClose" aria-label="Cerrar">✕</button></div>
+      <div class="clist" id="clist"></div>
+      <div class="cform" id="cform"></div>
     </div>
   </div>
 
@@ -150,57 +359,124 @@
   <script>
   (() => {
     const $ = (s) => document.querySelector(s);
-    let state = null, me = { voted: false, participantId: null }, filter = '', pending = null, sending = false;
+    const HEART = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.6 4.5c2.2 0 3.6 1.2 4.4 2.5.8-1.3 2.2-2.5 4.4-2.5 3.6 0 5.7 3.8 4.2 7.2C19.5 16.4 12 21 12 21z"/></svg>';
+    const BUBBLE = '<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z" stroke-linejoin="round"/></svg>';
+    let state = null, me = { voted: false, participantId: null }, fan = null, liked = new Set();
+    let filter = 'all', query = '', pending = null, sending = false, sheetPid = null, afterRegister = null;
 
-    // identificador local persistente (respaldo de la cookie)
+    FV.notes($('#notes'), window.innerWidth < 600 ? 16 : 28);
+
+    // aparición al hacer scroll
+    const io2 = 'IntersectionObserver' in window ? new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && (e.target.classList.add('in'), io2.unobserve(e.target))), { threshold: .12 }) : null;
+    const observe = () => document.querySelectorAll('.reveal:not(.in)').forEach((el) => (io2 ? io2.observe(el) : el.classList.add('in')));
+    addEventListener('scroll', () => $('#topnav').classList.toggle('solid', scrollY > 120), { passive: true });
+
+    /* ---------- identidad local (respaldo de la cookie de voto) ---------- */
     let localId = null;
     try {
       localId = localStorage.getItem('fv_local');
-      if (!/^[a-f0-9]{32}$/.test(localId || '')) {
-        localId = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
-        localStorage.setItem('fv_local', localId);
-      }
+      if (!/^[a-f0-9]{32}$/.test(localId || '')) { localId = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join(''); localStorage.setItem('fv_local', localId); }
     } catch { localId = null; }
-
     function fingerprint() {
       try {
-        const c = document.createElement('canvas'); const x = c.getContext('2d');
-        x.textBaseline = 'top'; x.font = '16px Arial'; x.fillStyle = '#f60'; x.fillRect(0, 0, 60, 20);
-        x.fillStyle = '#069'; x.fillText('MPPD-2026 🎤', 2, 2);
-        const parts = [navigator.userAgent, navigator.language, screen.width + 'x' + screen.height, screen.colorDepth, devicePixelRatio,
-          Intl.DateTimeFormat().resolvedOptions().timeZone, navigator.hardwareConcurrency, navigator.maxTouchPoints, c.toDataURL().slice(-80)].join('|');
+        const c = document.createElement('canvas'), x = c.getContext('2d');
+        x.textBaseline = 'top'; x.font = '16px Arial'; x.fillStyle = '#f60'; x.fillRect(0, 0, 60, 20); x.fillStyle = '#069'; x.fillText('MPPD-2026 🎤', 2, 2);
+        const parts = [navigator.userAgent, navigator.language, screen.width + 'x' + screen.height, screen.colorDepth, devicePixelRatio, Intl.DateTimeFormat().resolvedOptions().timeZone, navigator.hardwareConcurrency, navigator.maxTouchPoints, c.toDataURL().slice(-80)].join('|');
         let h = 2166136261; for (let i = 0; i < parts.length; i++) { h ^= parts.charCodeAt(i); h = Math.imul(h, 16777619); }
         let h2 = 5381; for (let i = 0; i < parts.length; i++) h2 = (Math.imul(h2, 33) ^ parts.charCodeAt(i)) >>> 0;
         return (h >>> 0).toString(16) + h2.toString(16) + parts.length.toString(16);
       } catch { return ''; }
     }
-
-    function localVoteKey() { return state ? 'fv_voted_' + state.voting.round : ''; }
+    const localVoteKey = () => (state ? 'fv_voted_' + state.voting.round : '');
 
     async function loadMe() {
       try {
-        const r = await fetch('/api/me', { credentials: 'same-origin' }).then((r) => r.json());
+        const r = await fetch('/api/me').then((r) => r.json());
         me = { voted: r.voted, participantId: r.participantId };
-        if (!me.voted && state) {
-          try { const v = localStorage.getItem('fv_voted_' + r.round); if (v) me = { voted: true, participantId: v }; } catch {}
-        }
+        if (!me.voted) { try { const v = localStorage.getItem('fv_voted_' + r.round); if (v) me = { voted: true, participantId: v }; } catch {} }
       } catch {}
       render();
+    }
+    async function loadFan() {
+      try { const r = await fetch('/api/fan/me').then((r) => r.json()); fan = r.fan; liked = new Set(r.liked); } catch {}
+      renderFan(); render();
+    }
+    function renderFan() {
+      const c = $('#fanchip');
+      c.innerHTML = fan ? `<i>${FV.esc((fan.nombre[0] + fan.apellidos[0]).toUpperCase())}</i><span>${FV.esc(fan.nombre)}</span>` : `<i>♪</i><span>Regístrate</span>`;
+    }
+
+    /* ---------- render ---------- */
+    function renderTexts() {
+      document.title = `${state.title} ${state.year}`;
+      $('#edition').textContent = state.edition || '';
+      $('#edition').hidden = !state.edition;
+      $('#title').textContent = state.title;
+      $('#year').textContent = state.year;
+      $('#tagline').textContent = state.tagline || '';
+      $('#description').textContent = state.description || '';
+      $('#aboutEyebrow').textContent = [state.edition, state.year].filter(Boolean).join(' · ');
+      $('#navTitle').textContent = state.title;
+      $('#ftitle').textContent = state.title.toUpperCase();
+      $('#fedition').textContent = [state.edition, state.year].filter(Boolean).join(' · ').toUpperCase();
+      $('#pCount').textContent = state.participants.filter((p) => !p.tribute).length;
+      const v = $('#video');
+      $('#videoSec').hidden = !state.video;
+      if (state.video && v.getAttribute('src') !== state.video) v.src = state.video;
+      if (!state.video) { v.removeAttribute('src'); v.load && v.load(); }
     }
 
     function renderStatus() {
       const st = state.voting.status, el = $('#status');
-      el.hidden = false;
+      const notes = '<div class="ic">♪ ♫ ♪</div>';
       if (me.voted && st !== 'idle') {
         const p = state.participants.find((x) => x.id === me.participantId);
-        el.innerHTML = `<div class="notes"><span>♪</span><span>♫</span><span>♪</span></div><h2>Tu voto fue registrado</h2><p>${p ? 'Votaste por <strong>' + FV.esc(FV.fullName(p)) + '</strong>. ' : ''}¡Gracias por participar! Disfruta la gala.</p>`;
+        el.innerHTML = `${notes}<h3>Tu voto fue registrado</h3><p>${p ? 'Votaste por <strong>' + FV.esc(FV.fullName(p)) + '</strong> para la Voz de la Audiencia. ' : ''}¡Gracias por participar! Puedes seguir escuchando, dando me gusta y comentando.</p>`;
       } else if (st === 'open') {
-        el.innerHTML = `<h2>¡Vota por tu cantante favorito!</h2><p>Toca <strong>VOTAR</strong> debajo de tu participante preferido. Solo puedes votar <strong>una vez</strong>.</p>`;
+        el.innerHTML = `<div class="ic">★</div><h3>¡Vota por la Voz de la Audiencia!</h3><p>Escucha a cada participante y toca <strong>VOTAR</strong> en tu favorito. Solo puedes votar <strong>una vez</strong>.</p>`;
       } else if (st === 'closed') {
-        el.innerHTML = `<div class="notes"><span>♪</span><span>♫</span><span>♪</span></div><h2>La votación ha finalizado</h2><p>Gracias por acompañarnos. Los resultados se anunciarán en la gala.</p>`;
+        el.innerHTML = `${notes}<h3>La votación del público ha finalizado</h3><p>Gracias por acompañarnos. Los ganadores se anunciarán en la gala.</p>`;
       } else {
-        el.innerHTML = `<div class="notes"><span>♪</span><span>♫</span><span>♪</span></div><h2>Conoce a nuestros participantes</h2><p>Mantén esta página abierta. Cuando se abra la votación podrás elegir a tu favorito.</p>`;
+        el.innerHTML = `${notes}<h3>Escucha y conoce a los participantes</h3><p>Dale play a sus voces, déjales tu me gusta y mantente atento: la votación de la <strong>Voz de la Audiencia</strong> se abrirá durante la gala.</p>`;
       }
+    }
+
+    function cardHtml(p, i) {
+      const isLiked = liked.has(p.id);
+      const photo = p.photo ? `<img src="${FV.esc(p.photo)}" alt="${FV.esc(FV.fullName(p))}" loading="lazy" decoding="async">` : `<div class="avatar-fallback">${FV.esc(FV.initials(p))}<small>♪ ♫ ♪</small></div>`;
+      return `<article class="card reveal" data-id="${p.id}" style="transition-delay:${Math.min(i % 4, 3) * 80}ms">
+        <div class="ph">${photo}<div class="ttl">${p.grado ? `<div class="grado">${FV.esc(p.grado)}</div>` : ''}<div class="name">${FV.esc(p.nombre)}<br>${FV.esc(p.apellidos)}</div></div></div>
+        <span class="num">${p.number}</span>
+        ${p.genero ? `<span class="chip-gender ${p.genero}">${FV.genderName[p.genero]}</span>` : ''}
+        <span class="mine-badge">★ Tu voto</span>
+        <div class="body">
+          ${p.cancion ? `<div class="song">Interpreta: <b>${FV.esc(p.cancion)}</b></div>` : ''}
+          ${FV.playerHtml(p.audio, 'Escuchar su voz')}
+          <div class="acts">
+            ${state.likesEnabled ? `<button class="act like ${isLiked ? 'on' : ''}" data-like="${p.id}" aria-label="Me gusta">${HEART}<span>${p.likes}</span></button>` : ''}
+            ${state.commentsEnabled || p.comments ? `<button class="act cm" data-cm="${p.id}" aria-label="Comentarios">${BUBBLE}<span>${p.comments}</span></button>` : ''}
+          </div>
+          <button class="btn vote" data-vote="${p.id}">Votar</button>
+        </div>
+      </article>`;
+    }
+
+    function tributeHtml(p) {
+      return `<div class="tribute panel reveal" data-id="${p.id}">
+        <div class="ph">${FV.photoHtml(p)}<span class="ribbon">IN MEMORIAM</span></div>
+        <div>
+          <div class="kick">Homenaje póstumo</div>
+          <h3 class="gold-text">${FV.esc(FV.fullName(p))}</h3>
+          ${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}
+          <div class="desc">${FV.esc(p.descripcion || 'Su voz y su servicio permanecen en nuestra memoria. Este festival también le pertenece.')}</div>
+          ${p.cancion ? `<div class="song" style="margin-bottom:10px">Recordamos su interpretación de <b>${FV.esc(p.cancion)}</b></div>` : ''}
+          ${FV.playerHtml(p.audio, 'Escuchar su voz')}
+          <div class="acts">
+            ${state.likesEnabled ? `<button class="act like ${liked.has(p.id) ? 'on' : ''}" data-like="${p.id}" aria-label="Encender una vela"><span class="candle"></span><span>${p.likes}</span>&nbsp;velas</button>` : ''}
+            ${state.commentsEnabled || p.comments ? `<button class="act cm" data-cm="${p.id}">${BUBBLE}<span>${p.comments}</span>&nbsp;mensajes</button>` : ''}
+          </div>
+        </div>
+      </div>`;
     }
 
     function render() {
@@ -208,44 +484,46 @@
       const open = state.voting.status === 'open';
       document.body.classList.toggle('open', open);
       document.body.classList.toggle('voted', !!me.voted);
-      $('#timer').classList.toggle('show', open);
-      $('#title').textContent = state.title; $('#year').textContent = state.year; $('#fyear').textContent = state.year;
       renderStatus();
 
-      const list = state.participants.filter((p) => !filter || (FV.fullName(p) + ' ' + p.grado).toLowerCase().includes(filter));
-      $('#searchWrap').hidden = state.participants.length < 9;
+      const tributes = state.participants.filter((p) => p.tribute);
+      $('#tributeSec').hidden = !tributes.length;
+      const tKey = JSON.stringify(tributes) + state.likesEnabled + state.commentsEnabled + [...liked].join();
+      if ($('#tributes').dataset.key !== tKey) { $('#tributes').dataset.key = tKey; $('#tributes').innerHTML = tributes.map(tributeHtml).join(''); }
+
+      const comp = state.participants.filter((p) => !p.tribute);
+      const hasGender = comp.some((p) => p.genero);
+      $('#filters').hidden = !hasGender;
+      const list = comp.filter((p) => (filter === 'all' || p.genero === filter) && (!query || (FV.fullName(p) + ' ' + p.grado + ' ' + p.cancion).toLowerCase().includes(query)));
+      $('#searchWrap').hidden = comp.length < 9;
       const grid = $('#grid');
-      if (!state.participants.length) { grid.innerHTML = `<div class="empty">Pronto conocerás a los participantes.</div>`; return; }
-      const key = list.map((p) => p.id + p.photo + p.nombre + p.apellidos + p.grado + p.number).join();
+      const key = JSON.stringify(list.map((p) => [p.id, p.photo, p.audio, p.nombre, p.apellidos, p.grado, p.genero, p.cancion, p.number])) + state.likesEnabled + state.commentsEnabled;
       if (grid.dataset.key !== key) {
         grid.dataset.key = key;
-        grid.innerHTML = list.map((p, i) => `
-          <article class="card" data-id="${p.id}" style="animation-delay:${Math.min(i, 12) * 50}ms">
-            <div class="ph">${FV.photoHtml(p)}</div>
-            <span class="num">${p.number}</span>
-            <span class="badge">★ Tu voto</span>
-            <div class="info">
-              ${p.grado ? `<div class="grado">${FV.esc(p.grado)}</div>` : ''}
-              <div class="name">${FV.esc(p.nombre)}<br>${FV.esc(p.apellidos)}</div>
-              <button class="btn vote" data-vote="${p.id}">Votar</button>
-            </div>
-          </article>`).join('');
+        grid.innerHTML = list.length ? list.map(cardHtml).join('') : `<div class="empty">${comp.length ? 'Sin resultados.' : 'Muy pronto conocerás a los participantes.'}</div>`;
       }
+      // contadores y estados sin redibujar
+      document.querySelectorAll('[data-like]').forEach((b) => { const p = state.participants.find((x) => x.id === b.dataset.like); if (!p) return; b.classList.toggle('on', liked.has(p.id)); b.querySelector('span:last-of-type').textContent = p.likes; });
+      document.querySelectorAll('[data-cm]').forEach((b) => { const p = state.participants.find((x) => x.id === b.dataset.cm); if (p) b.querySelector('span').textContent = p.comments; });
       grid.querySelectorAll('.card').forEach((c) => c.classList.toggle('mine', me.voted && c.dataset.id === me.participantId));
+      observe();
+      tick();
     }
 
     function tick() {
-      if (state && state.voting.status === 'open' && state.voting.endsAt) {
-        const left = state.voting.endsAt - FV.now();
-        const clock = $('#clock');
-        clock.textContent = FV.fmtTime(left);
-        clock.classList.toggle('urgent', left < 60000);
-        const total = state.voting.endsAt - (state.voting.startsAt || FV.now());
-        $('#timebar').style.width = Math.max(0, Math.min(100, (left / total) * 100)) + '%';
-      }
+      if (!state || state.voting.status !== 'open') return;
+      const v = state.voting;
+      if (!v.endsAt) { $('#clock').textContent = 'SIN LÍMITE'; $('#timebarWrap').hidden = true; return; }
+      $('#timebarWrap').hidden = false;
+      const left = v.endsAt - FV.now();
+      $('#clock').textContent = FV.fmtTime(left);
+      $('#clock').classList.toggle('urgent', left < 60000);
+      const total = v.endsAt - (v.startsAt || FV.now());
+      $('#timebar').style.width = Math.max(0, Math.min(100, (left / total) * 100)) + '%';
     }
     setInterval(tick, 250);
 
+    /* ---------- votar ---------- */
     function openConfirm(id) {
       const p = state.participants.find((x) => x.id === id); if (!p) return;
       pending = id;
@@ -253,59 +531,150 @@
       $('#cGrado').textContent = p.grado || '';
       $('#cName').textContent = FV.fullName(p);
       $('#confirm').classList.add('show');
-      $('#cOk').focus();
     }
     const closeConfirm = () => { $('#confirm').classList.remove('show'); pending = null; };
-
     async function sendVote() {
       if (!pending || sending) return;
       sending = true; $('#cOk').disabled = true; $('#cOk').textContent = 'Enviando…';
       try {
-        const r = await fetch('/api/vote', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ participantId: pending, fp: fingerprint(), localId }) });
+        const r = await fetch('/api/vote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ participantId: pending, fp: fingerprint(), localId }) });
         const j = await r.json();
         if (r.ok) {
           me = { voted: true, participantId: j.participantId };
           try { localStorage.setItem(localVoteKey(), j.participantId); } catch {}
           const p = state.participants.find((x) => x.id === j.participantId);
           $('#thanksMsg').innerHTML = `Votaste por <strong>${FV.esc(FV.fullName(p))}</strong>.<br>¡Tu voz cuenta!`;
-          closeConfirm();
-          $('#thanks').classList.add('show');
+          closeConfirm(); $('#thanks').classList.add('show');
           FV.confetti({ duration: 2500, count: 160 });
           if (navigator.vibrate) navigator.vibrate([30, 40, 60]);
         } else {
           if (j.participantId) { me = { voted: true, participantId: j.participantId }; try { localStorage.setItem(localVoteKey(), j.participantId); } catch {} }
           else if (r.status === 409 && /dispositivo|registraste/.test(j.error || '')) { me = { voted: true, participantId: null }; try { localStorage.setItem(localVoteKey(), '1'); } catch {} }
-          closeConfirm();
-          FV.toast(j.error || 'No se pudo registrar el voto.', 'error');
+          closeConfirm(); FV.toast(j.error || 'No se pudo registrar el voto.', 'error');
         }
-      } catch {
-        FV.toast('Sin conexión. Intenta de nuevo.', 'error');
-      } finally {
-        sending = false; $('#cOk').disabled = false; $('#cOk').textContent = 'Confirmar voto';
-        render();
-      }
+      } catch { FV.toast('Sin conexión. Intenta de nuevo.', 'error'); }
+      finally { sending = false; $('#cOk').disabled = false; $('#cOk').textContent = 'Confirmar voto'; render(); }
     }
 
-    $('#grid').addEventListener('click', (e) => { const b = e.target.closest('[data-vote]'); if (b && !me.voted) openConfirm(b.dataset.vote); });
+    /* ---------- registro ---------- */
+    function askRegister(then) {
+      afterRegister = then || null;
+      $('#register').classList.add('show');
+      setTimeout(() => $('#rNombre').focus(), 50);
+    }
+    $('#rForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const r = await fetch('/api/fan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: $('#rNombre').value, apellidos: $('#rApellido').value }) });
+      const j = await r.json();
+      if (!r.ok) return FV.toast(j.error || 'No se pudo registrar.', 'error');
+      fan = j.fan; renderFan();
+      $('#register').classList.remove('show');
+      FV.toast(`¡Bienvenido(a), ${fan.nombre}!`, 'ok');
+      await loadFan();
+      const fn = afterRegister; afterRegister = null; fn && fn();
+    };
+    $('#rCancel').onclick = () => { $('#register').classList.remove('show'); afterRegister = null; };
+    $('#fanchip').onclick = () => {
+      if (!fan) return askRegister();
+      $('#accName').textContent = `${fan.nombre} ${fan.apellidos}`;
+      $('#account').classList.add('show');
+    };
+    $('#accOk').onclick = () => $('#account').classList.remove('show');
+    $('#accOut').onclick = async () => { await fetch('/api/fan/logout', { method: 'POST' }); fan = null; liked = new Set(); renderFan(); render(); $('#account').classList.remove('show'); };
+
+    /* ---------- me gusta ---------- */
+    async function toggleLike(pid, btn) {
+      if (!fan) return askRegister(() => toggleLike(pid));
+      const r = await fetch('/api/like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ participantId: pid }) });
+      const j = await r.json();
+      if (r.status === 401 && j.register) { fan = null; renderFan(); return askRegister(() => toggleLike(pid)); }
+      if (!r.ok) return FV.toast(j.error || 'Error', 'error');
+      j.liked ? liked.add(pid) : liked.delete(pid);
+      const p = state.participants.find((x) => x.id === pid); if (p) p.likes = j.count;
+      if (j.liked && navigator.vibrate) navigator.vibrate(15);
+      render();
+    }
+
+    /* ---------- comentarios ---------- */
+    function cmtHtml(c) {
+      return `<div class="cmt ${c.status === 'pending' ? 'pending' : ''}" data-cid="${c.id}"><b>${FV.esc(c.nombre)}</b><small>${c.status === 'pending' ? 'en revisión' : FV.timeAgo(c.t)}</small><p>${FV.esc(c.text)}</p></div>`;
+    }
+    function renderForm() {
+      const f = $('#cform');
+      if (!state.commentsEnabled) { f.innerHTML = `<div class="cnote">Los comentarios están cerrados en este momento.</div>`; return; }
+      if (!fan) { f.innerHTML = `<div class="cnote">Regístrate con tu nombre y apellido para comentar.<br><button class="btn sm" style="margin-top:10px" id="cReg">Registrarme</button></div>`; $('#cReg').onclick = () => askRegister(renderForm); return; }
+      f.innerHTML = `<form id="cSend"><textarea id="cText" maxlength="280" placeholder="Escribe un mensaje respetuoso…" aria-label="Comentario"></textarea><div class="row"><span>Comentas como <b>${FV.esc(fan.nombre)} ${FV.esc(fan.apellidos)}</b> · <span id="cLen">0</span>/280</span><button class="btn sm" type="submit">Publicar</button></div></form>`;
+      $('#cText').oninput = (e) => ($('#cLen').textContent = e.target.value.length);
+      $('#cSend').onsubmit = async (e) => {
+        e.preventDefault();
+        const text = $('#cText').value.trim(); if (!text) return;
+        const btn = e.target.querySelector('button'); btn.disabled = true;
+        try {
+          const r = await fetch('/api/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ participantId: sheetPid, text }) });
+          const j = await r.json();
+          if (!r.ok) { if (j.register) { fan = null; renderFan(); renderForm(); } return FV.toast(j.error || 'No se pudo publicar.', 'error'); }
+          $('#cText').value = ''; $('#cLen').textContent = '0';
+          if (j.pending) { addComment(j.comment); FV.toast('Tu comentario será visible cuando el administrador lo apruebe.', 'ok'); }
+          else addComment(j.comment);
+        } finally { btn.disabled = false; }
+      };
+    }
+    function addComment(c) {
+      if (c.pid !== sheetPid || document.querySelector(`[data-cid="${c.id}"]`)) return;
+      const list = $('#clist'); const empty = list.querySelector('.cnote'); if (empty) empty.remove();
+      list.insertAdjacentHTML('beforeend', cmtHtml(c));
+      list.scrollTop = list.scrollHeight;
+    }
+    async function openSheet(pid) {
+      const p = state.participants.find((x) => x.id === pid); if (!p) return;
+      sheetPid = pid;
+      $('#shAv').innerHTML = FV.photoHtml(p);
+      $('#shName').textContent = FV.fullName(p);
+      $('#shSub').textContent = p.tribute ? 'Mensajes de recuerdo' : 'Comentarios';
+      $('#clist').innerHTML = '<div class="cnote">Cargando…</div>';
+      renderForm();
+      $('#sheet').classList.add('show');
+      document.body.style.overflow = 'hidden';
+      const r = await fetch('/api/comments/' + pid).then((r) => r.json()).catch(() => ({ comments: [] }));
+      $('#clist').innerHTML = r.comments.length ? r.comments.map(cmtHtml).join('') : `<div class="cnote">Sé el primero en dejar un mensaje.</div>`;
+      $('#clist').scrollTop = 1e6;
+    }
+    const closeSheet = () => { $('#sheet').classList.remove('show'); sheetPid = null; document.body.style.overflow = ''; };
+    $('#shClose').onclick = closeSheet;
+    $('#sheet').addEventListener('click', (e) => { if (e.target.id === 'sheet') closeSheet(); });
+
+    /* ---------- eventos ---------- */
+    document.addEventListener('click', (e) => {
+      const v = e.target.closest('[data-vote]'); if (v && !me.voted) return openConfirm(v.dataset.vote);
+      const l = e.target.closest('[data-like]'); if (l) return toggleLike(l.dataset.like, l);
+      const c = e.target.closest('[data-cm]'); if (c) return openSheet(c.dataset.cm);
+    });
+    $('#filters').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; filter = b.dataset.f; document.querySelectorAll('#filters button').forEach((x) => x.classList.toggle('on', x === b)); render(); };
     $('#cCancel').onclick = closeConfirm;
     $('#confirm').addEventListener('click', (e) => { if (e.target.id === 'confirm') closeConfirm(); });
     $('#cOk').onclick = sendVote;
     $('#thanksOk').onclick = () => $('#thanks').classList.remove('show');
-    $('#search').addEventListener('input', (e) => { filter = e.target.value.trim().toLowerCase(); render(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeConfirm(); });
+    $('#search').addEventListener('input', (e) => { query = e.target.value.trim().toLowerCase(); render(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeConfirm(); closeSheet(); $('#register').classList.remove('show'); } });
 
     const socket = io({ auth: { role: 'public' } });
     socket.on('state', (s) => {
-      const prevRound = state && state.voting.round;
-      const wasOpen = state && state.voting.status === 'open';
+      const prev = state;
       FV.syncClock(s.now);
       state = s;
-      if (prevRound && prevRound !== s.voting.round) { me = { voted: false, participantId: null }; }
-      if (!wasOpen && s.voting.status === 'open' && prevRound) FV.toast('¡La votación está abierta!', 'ok');
-      loadMe();
-      tick();
+      if (prev && prev.voting.round !== s.voting.round) me = { voted: false, participantId: null };
+      if (prev && prev.voting.status !== 'open' && s.voting.status === 'open') FV.toast('¡La votación de la Voz de la Audiencia está abierta!', 'ok');
+      renderTexts();
+      if (sheetPid) renderForm();
+      if (!prev) { loadMe(); loadFan(); } else if (prev.voting.round !== s.voting.round || prev.voting.status !== s.voting.status) loadMe(); else render();
     });
-    socket.on('connect', () => document.body.classList.remove('offline'));
+    socket.on('likes', (m) => {
+      if (!state) return;
+      state.participants.forEach((p) => { if (m[p.id]) { p.likes = m[p.id].l; p.comments = m[p.id].c; } });
+      render();
+    });
+    socket.on('comment', (c) => addComment(c));
+    socket.on('comment-removed', ({ id }) => { const el = document.querySelector(`[data-cid="${id}"]`); if (el) el.remove(); });
   })();
   </script>
 </body>

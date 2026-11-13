@@ -1,11 +1,12 @@
 {
   "name": "festival-voz-mppd-2026",
   "version": "1.0.0",
-  "description": "Sistema de votación en vivo — Festival de la Voz Ministerial del MPPD 2026",
+  "description": "Festival de la Voz Ministerial del MPPD 2026: Voz de la Audiencia, sala del jurado, comunidad y pantalla de gala",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "node --test test/*.test.js"
   },
   "repository": {
     "type": "git",
