@@ -305,7 +305,7 @@
           <div class="card panel">
             <h2>Zona de reinicio</h2>
             <p class="muted" style="margin-top:-6px">Borra todos los votos y ajustes y deja la votación en espera (los participantes se conservan). Úselo para ensayos antes de la gala.</p>
-            <button class="btn danger sm" id="resetAll">Reiniciar votación completa</button>
+            <div class="row"><button class="btn ghost sm" id="backup">⬇ Descargar respaldo</button><button class="btn danger sm" id="resetAll">Reiniciar votación completa</button></div>
           </div>
         </div>
       </div>
@@ -345,7 +345,7 @@
       token = j.token; try { localStorage.setItem('fv_admin_token', token); } catch {}
       start();
     };
-    function logout() { try { localStorage.removeItem('fv_admin_token'); } catch {} token = null; socket && socket.disconnect(); $('#app').hidden = true; $('#login').hidden = false; }
+    function logout() { if (token) fetch('/api/admin/logout', { method: 'POST', headers: { 'x-admin-token': token } }).catch(() => {}); try { localStorage.removeItem('fv_admin_token'); } catch {} token = null; socket && socket.disconnect(); $('#app').hidden = true; $('#login').hidden = false; }
     $('#logout').onclick = logout;
 
     function start() {
@@ -574,6 +574,10 @@
     $('#saveSettings').onclick = () => api('/settings', { title: $('#sTitle').value, year: $('#sYear').value, strictMode: $('#sStrict').checked }).then(() => FV.toast('Datos guardados', 'ok'));
     $('#copyScreen').onclick = () => navigator.clipboard.writeText(screenLink()).then(() => FV.toast('Enlace copiado', 'ok'), () => FV.toast(screenLink()));
     $('#regenKey').onclick = async () => { if (await confirmBox('Nueva clave', 'Las pantallas abiertas con el enlace anterior dejarán de funcionar.', 'Generar')) api('/settings', { regenScreenKey: true }); };
+    $('#backup').onclick = async () => {
+      const r = await fetch('/api/admin/backup.json', { headers: { 'x-admin-token': token } });
+      const b = await r.blob(); const x = document.createElement('a'); x.href = URL.createObjectURL(b); x.download = 'respaldo-festival.json'; x.click();
+    };
     $('#resetAll').onclick = async () => { if (await confirmBox('Reiniciar votación', 'Se borrarán <b>todos los votos</b> y ajustes. Esta acción no se puede deshacer.', 'Reiniciar todo')) api('/voting/reset', {}).then(() => FV.toast('Votación reiniciada', 'ok')); };
   })();
   </script>

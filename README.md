@@ -42,7 +42,7 @@ $env:ADMIN_PASSWORD="su-clave-secreta"; npm start
 
 La consola muestra las direcciones. **Si no define `ADMIN_PASSWORD`, la contraseña es `mppd2026`. Cámbiela antes del evento.**
 
-Variables opcionales: `PORT` (por defecto 3000) y `DATA_DIR` (carpeta donde se guardan votos y fotos; por defecto `./data`).
+Variables opcionales: `PORT` (por defecto 3000), `DATA_DIR` (carpeta donde se guardan votos y fotos; por defecto `./data`) y `NODE_ENV=production` (modo Internet: exige una contraseña segura y activa las cookies seguras para HTTPS).
 
 ## 🌐 ¿Cómo llega el público a la página?
 
@@ -50,7 +50,7 @@ Los teléfonos del público tienen que poder abrir la dirección del servidor. H
 
 **A) Red local (Wi-Fi del teatro).** Ejecute el sistema en una laptop conectada al Wi-Fi del evento. En *Panel → QR y configuración* aparecen las direcciones de la red local (por ejemplo `http://192.168.1.50:3000/`). Elija una y pulse «Guardar URL». El QR se actualiza solo. El público debe estar conectado a ese mismo Wi-Fi.
 
-**B) En Internet (recomendado si el público usa datos móviles).** Publique el proyecto en un servicio de Node.js (Render, Railway, Fly.io, un VPS, etc.) con el comando de inicio `npm start` y la variable `ADMIN_PASSWORD`. Configure un **disco persistente** y apunte `DATA_DIR` a él para que los votos y las fotos no se pierdan si el servicio se reinicia.
+**B) En Internet (recomendado si el público usa datos móviles).** 👉 Siga la guía paso a paso en **[DESPLIEGUE.md](DESPLIEGUE.md)**. El proyecto ya incluye `render.yaml` para publicarlo en Render con pocos clics, y un `Dockerfile` para Railway o un servidor propio.
 
 ## 🎬 Guion sugerido para la gala
 

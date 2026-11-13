@@ -4,7 +4,8 @@
   "description": "Sistema de votación en vivo — Festival de la Voz Ministerial del MPPD 2026",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -17,12 +18,13 @@
   "dependencies": {
     "@fontsource/cinzel": "^5.3.0",
     "@fontsource/montserrat": "^5.3.0",
+    "compression": "^1.8.2",
     "express": "^4.22.3",
     "qrcode": "^1.5.4",
     "socket.io": "^4.8.4"
   },
   "private": true,
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }

@@ -1,0 +1,23 @@
+# Blueprint de Render: https://render.com/docs/blueprint-spec
+# En Render: New + → Blueprint → elija este repositorio.
+services:
+  - type: web
+    name: festival-voz-mppd-2026
+    runtime: node
+    region: virginia          # el más cercano a Venezuela
+    plan: starter             # el plan gratuito no permite disco persistente
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /healthz
+    numInstances: 1           # una sola instancia (los votos viven en el disco)
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /var/data
+      - key: ADMIN_PASSWORD
+        sync: false           # Render se la pedirá al crear el servicio
+    disk:
+      name: datos-festival
+      mountPath: /var/data
+      sizeGB: 1

@@ -12,9 +12,17 @@ const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
 const QRCode = require('qrcode');
+const compression = require('compression');
 
 const PORT = Number(process.env.PORT) || 3000;
+const IS_PROD = process.env.NODE_ENV === 'production';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'mppd2026';
+
+// En Internet nunca se arranca con la contraseña de ejemplo
+if (IS_PROD && (!process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD.length < 8 || process.env.ADMIN_PASSWORD === 'mppd2026')) {
+  console.error('\n  ✖ Defina la variable ADMIN_PASSWORD (mínimo 8 caracteres, distinta de "mppd2026") antes de publicar en Internet.\n');
+  process.exit(1);
+}
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
@@ -51,6 +59,7 @@ function defaultDb() {
     fingerprints: {},         // hash -> voterId
     audit: [],                // registro de ajustes manuales
     screen: { mode: 'espera', showCounts: true, revealAt: 0 },
+    sessions: {},             // token de administrador -> vence (sobrevive reinicios)
   };
 }
 
@@ -59,6 +68,7 @@ try {
   db = Object.assign(defaultDb(), JSON.parse(fs.readFileSync(DB_FILE, 'utf8')));
   db.settings = Object.assign(defaultDb().settings, db.settings);
   db.screen = Object.assign(defaultDb().screen, db.screen);
+  db.sessions = db.sessions || {};
 } catch {
   db = defaultDb();
 }
@@ -192,7 +202,17 @@ function lanUrls() {
 const app = express();
 app.set('trust proxy', true);
 app.disable('x-powered-by');
+app.use(compression());
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'same-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  if (req.path.startsWith('/admin') || req.path.startsWith('/api/admin')) res.setHeader('X-Frame-Options', 'DENY');
+  if (req.secure) res.setHeader('Strict-Transport-Security', 'max-age=15552000');
+  next();
+});
 app.use(express.json({ limit: '8mb' }));
+app.get('/healthz', (req, res) => res.json({ ok: true, status: db.voting.status }));
 
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: false } });
@@ -207,13 +227,12 @@ function parseCookies(req) {
 }
 
 /* --- autenticación del administrador --- */
-const adminTokens = new Map(); // token -> expira
 const TOKEN_TTL = 1000 * 60 * 60 * 18;
 
 function isAdminToken(t) {
-  const exp = t && adminTokens.get(t);
+  const exp = typeof t === 'string' && Object.prototype.hasOwnProperty.call(db.sessions, t) && db.sessions[t];
   if (!exp) return false;
-  if (exp < Date.now()) { adminTokens.delete(t); return false; }
+  if (exp < Date.now()) { delete db.sessions[t]; save(); return false; }
   return true;
 }
 function requireAdmin(req, res, next) {
@@ -235,11 +254,14 @@ app.post('/api/admin/login', (req, res) => {
   if (a.n >= 10) return res.status(429).json({ error: 'Demasiados intentos. Espere unos minutos.' });
   if (!safeEqual(req.body?.password || '', ADMIN_PASSWORD)) {
     a.n++; loginAttempts.set(ip, a);
-    return res.status(401).json({ error: 'Contraseña incorrecta' });
+    // pequeña espera para frenar ataques de fuerza bruta
+    return setTimeout(() => res.status(401).json({ error: 'Contraseña incorrecta' }), 600);
   }
   loginAttempts.delete(ip);
   const token = rid(24);
-  adminTokens.set(token, Date.now() + TOKEN_TTL);
+  for (const [k, exp] of Object.entries(db.sessions)) if (exp < Date.now()) delete db.sessions[k];
+  db.sessions[token] = Date.now() + TOKEN_TTL;
+  save();
   res.json({ token });
 });
 
@@ -306,7 +328,7 @@ app.post('/api/vote', (req, res) => {
   db.votes[participantId] = (db.votes[participantId] || 0) + 1;
   save();
 
-  res.setHeader('Set-Cookie', `fv_voter=${voterId}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax; HttpOnly`);
+  res.setHeader('Set-Cookie', `fv_voter=${voterId}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax; HttpOnly${req.secure ? '; Secure' : ''}`);
   res.json({ ok: true, participantId, voterId });
   scheduleResults();
 });
@@ -517,6 +539,16 @@ admin.post('/settings', (req, res) => {
   res.json({ ok: true });
 });
 
+admin.post('/logout', (req, res) => {
+  delete db.sessions[req.get('x-admin-token')]; save();
+  res.json({ ok: true });
+});
+
+admin.get('/backup.json', (req, res) => {
+  const { sessions, ...rest } = db;
+  res.set('Content-Disposition', `attachment; filename="respaldo-festival-${new Date().toISOString().slice(0, 10)}.json"`).json(rest);
+});
+
 admin.get('/export.csv', (req, res) => {
   const r = results();
   const rows = [['Puesto', 'N°', 'Grado', 'Nombre', 'Apellidos', 'Votos reales', 'Ajuste', 'Votos finales', 'Porcentaje']];
@@ -571,10 +603,16 @@ setInterval(() => {
   }
 }, 500);
 
+// limpieza periódica del limitador de votos
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, arr] of voteRate) if (!arr.length || now - arr[arr.length - 1] > 60000) voteRate.delete(ip);
+}, 5 * 60000).unref();
+
 process.on('SIGINT', () => { saveNow(); process.exit(0); });
 process.on('SIGTERM', () => { saveNow(); process.exit(0); });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log('\n  🎤  Festival de la Voz Ministerial del MPPD 2026');
   console.log('  ───────────────────────────────────────────────');
   console.log(`  Votación pública : http://localhost:${PORT}/`);
