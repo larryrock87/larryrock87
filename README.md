@@ -69,13 +69,17 @@ ADMIN_PASSWORD="su-clave-secreta" npm start
 
 **Sin `ADMIN_PASSWORD`, la contraseña es `mppd2026`. Cámbiela antes del evento.** En Internet (`NODE_ENV=production`), el sistema exige una contraseña segura.
 
-Variables opcionales: `PORT` (por defecto 3000) y `DATA_DIR` (carpeta de votos, fotos, audios y video; por defecto `./data`).
+Variables opcionales:
+- `PORT`: por defecto 3000.
+- `DATA_DIR`: carpeta de votos, fotos, audios y video; por defecto `./data`.
+- `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`: guardan todo en Supabase (vea [SUPABASE.md](SUPABASE.md) y `.env.example`).
 
 Pruebas automáticas de la lógica del jurado y del filtro de comentarios: `npm test`.
 
 ## 🌐 Publicar en Internet
 
-Siga **[DESPLIEGUE.md](DESPLIEGUE.md)**. El proyecto incluye `render.yaml` para Render y un `Dockerfile` para Railway o un servidor propio.
+- **Recomendado: Render + Supabase**. Siga **[SUPABASE.md](SUPABASE.md)**. Supabase guarda los datos, las fotos, los audios y el video; el servidor en Render muestra las páginas y el tiempo real. El público escanea el QR y entra con Wi-Fi o datos móviles.
+- Otras opciones (Railway, servidor propio con Docker, disco persistente): **[DESPLIEGUE.md](DESPLIEGUE.md)**.
 
 ## 🎬 Guion sugerido para la gala
 
@@ -107,6 +111,8 @@ El **modo estricto** opcional también bloquea por huella del dispositivo. Úsel
 server.js             Servidor (Express + Socket.io): API, tiempos y tiempo real
 lib/jury.js           Cálculo de puntajes, podios, empates y aprobación (con pruebas)
 lib/filtro.js         Filtro de lenguaje ofensivo para comentarios (con pruebas)
+lib/store.js          Almacenamiento: disco local o Supabase (base de datos + Storage)
+supabase/setup.sql    Script para crear la tabla y el bucket en Supabase
 public/index.html     Página del festival (público)
 public/jurado.html    Sala de evaluación del jurado
 public/pantalla.html  Pantalla de gala 1920×1080 (se adapta a cualquier pantalla)

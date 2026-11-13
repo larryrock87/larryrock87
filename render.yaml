@@ -1,23 +1,24 @@
 # Blueprint de Render: https://render.com/docs/blueprint-spec
-# En Render: New + → Blueprint → elija este repositorio.
+# En Render: New + → Blueprint → elija este repositorio y la rama del sistema.
+#
+# Esta configuración usa SUPABASE para guardar los datos y archivos
+# (vea SUPABASE.md). Por eso NO necesita disco persistente en Render.
 services:
   - type: web
     name: festival-voz-mppd-2026
     runtime: node
-    region: virginia          # el más cercano a Venezuela
-    plan: starter             # el plan gratuito no permite disco persistente
+    region: virginia          # junto a Supabase "East US (North Virginia)"
+    plan: starter             # siempre encendido; el plan gratuito se "duerme" tras 15 min sin visitas
     buildCommand: npm ci --omit=dev
     startCommand: npm start
     healthCheckPath: /healthz
-    numInstances: 1           # una sola instancia (los votos viven en el disco)
+    numInstances: 1           # una sola instancia (el estado en vivo vive en este servidor)
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATA_DIR
-        value: /var/data
       - key: ADMIN_PASSWORD
         sync: false           # Render se la pedirá al crear el servicio
-    disk:
-      name: datos-festival
-      mountPath: /var/data
-      sizeGB: 2          # fotos, audios MP3 y video
+      - key: SUPABASE_URL
+        sync: false           # p.ej. https://abcdefgh.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false           # clave secreta (service_role / sb_secret_…): solo aquí, nunca en público

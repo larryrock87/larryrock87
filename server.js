@@ -16,6 +16,7 @@ const QRCode = require('qrcode');
 const compression = require('compression');
 const J = require('./lib/jury');
 const { esOfensivo, tieneEnlace } = require('./lib/filtro');
+const { createStore } = require('./lib/store');
 
 const PORT = Number(process.env.PORT) || 3000;
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -27,15 +28,19 @@ if (IS_PROD && (!process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD.length
   process.exit(1);
 }
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
-const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
-const DB_FILE = path.join(DATA_DIR, 'db.json');
+const store = createStore({
+  dataDir: DATA_DIR,
+  supabaseUrl: process.env.SUPABASE_URL,
+  supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  bucket: process.env.SUPABASE_BUCKET || 'festival',
+});
+const UPLOAD_DIR = store.uploadDir;
 const MAX_PARTICIPANTS = 30;
 const MAX_JUDGES = 5;
 const MAX_MINUTES = 12 * 60; // los procesos con tiempo duran de 1 minuto a 12 horas
 const MAX_AUDIO = 15 * 1024 * 1024;
-const MAX_VIDEO = 120 * 1024 * 1024;
-
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Supabase Storage (plan gratuito) admite archivos de hasta 50 MB
+const MAX_VIDEO = (store.mode === 'supabase' ? Number(process.env.SUPABASE_MAX_FILE_MB) || 50 : 120) * 1024 * 1024;
 
 /* ================================================================== */
 /* Persistencia                                                        */
@@ -80,39 +85,27 @@ function defaultDb() {
   };
 }
 
-let db;
-try {
-  const raw = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-  const d = defaultDb();
-  db = Object.assign(d, raw);
-  db.settings = Object.assign(defaultDb().settings, raw.settings);
-  db.screen = Object.assign(defaultDb().screen, raw.screen);
-  db.jury = Object.assign(defaultDb().jury, raw.jury);
-  db.decisions = Object.assign({ F: {}, M: {} }, raw.decisions);
+let db = defaultDb(); // se reemplaza al arrancar con los datos guardados (ver start())
+
+function hydrate(raw) {
+  if (!raw) return defaultDb();
+  const d = Object.assign(defaultDb(), raw);
+  d.settings = Object.assign(defaultDb().settings, raw.settings);
+  d.screen = Object.assign(defaultDb().screen, raw.screen);
+  d.jury = Object.assign(defaultDb().jury, raw.jury);
+  d.decisions = Object.assign({ F: {}, M: {} }, raw.decisions);
   // migración de versiones anteriores
-  for (const [t, v] of Object.entries(db.sessions || {})) if (typeof v === 'number') db.sessions[t] = { role: 'admin', exp: v };
-  db.participants.forEach((p) => {
+  for (const [t, v] of Object.entries(d.sessions || {})) if (typeof v === 'number') d.sessions[t] = { role: 'admin', exp: v };
+  d.participants.forEach((p) => {
     p.genero = p.genero || ''; p.cancion = p.cancion || ''; p.descripcion = p.descripcion || '';
     p.audio = p.audio || null; p.tribute = !!p.tribute; p.inEvaluation = !!p.inEvaluation;
   });
-} catch {
-  db = defaultDb();
+  return d;
 }
 
-// Guardado con límite de frecuencia: escribe como máximo cada 300 ms aunque
-// lleguen votos sin parar (nunca pospone el guardado indefinidamente).
-let saveTimer = null;
-function writeDb() {
-  const tmp = DB_FILE + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(db));
-  fs.renameSync(tmp, DB_FILE);
-}
-function save() {
-  if (saveTimer) return;
-  saveTimer = setTimeout(() => { saveTimer = null; writeDb(); }, 300);
-}
-function saveNow() { clearTimeout(saveTimer); saveTimer = null; writeDb(); }
-saveNow();
+// Guardado con límite de frecuencia (local cada 300 ms; Supabase como máximo 1 vez por segundo)
+const save = () => store.save(db);
+const saveNow = () => store.saveNow(db);
 
 function log(type, actor, msg) {
   db.audit.push({ t: Date.now(), type, actor, msg });
@@ -277,6 +270,7 @@ function adminState() {
     maxParticipants: MAX_PARTICIPANTS,
     maxJudges: MAX_JUDGES,
     lanUrls: lanUrls(),
+    storage: store.status(),
     jury: juryAdminState(),
     community: communityAdminState(),
   };
@@ -330,7 +324,10 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({ limit: '8mb' }));
-app.get('/healthz', (req, res) => res.json({ ok: true, voting: db.voting.status, jury: db.jury.status }));
+app.get('/healthz', (req, res) => {
+  const st = store.status();
+  res.status(st.failures >= 5 ? 503 : 200).json({ ok: st.failures < 5, storage: st.mode, voting: db.voting.status, jury: db.jury.status });
+});
 
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: false }, maxHttpBufferSize: 1e6 });
@@ -659,19 +656,15 @@ admin.get('/audit', (req, res) => res.json({ audit: [...db.audit].reverse() }));
 admin.post('/logout', (req, res) => { delete db.sessions[req.get('x-admin-token')]; save(); res.json({ ok: true }); });
 
 /* --- archivos subidos --- */
-function savePhoto(dataUrl, id) {
+async function savePhoto(dataUrl, id) {
   const m = /^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/.exec(dataUrl || '');
   if (!m) return null;
   const buf = Buffer.from(m[2], 'base64');
   if (buf.length > 6 * 1024 * 1024) throw new Error('La foto es demasiado grande.');
   const ext = m[1] === 'jpeg' || m[1] === 'jpg' ? 'jpg' : m[1];
-  const name = `${id}-${rid(4)}.${ext}`;
-  fs.writeFileSync(path.join(UPLOAD_DIR, name), buf);
-  return `/uploads/${name}`;
+  return store.putFile(`foto-${id}-${rid(4)}.${ext}`, buf);
 }
-function removeFile(url) {
-  if (url && url.startsWith('/uploads/')) fs.rm(path.join(UPLOAD_DIR, path.basename(url)), () => {});
-}
+const removeFile = (url) => store.removeFile(url);
 const AUDIO_TYPES = { 'audio/mpeg': 'mp3', 'audio/mp3': 'mp3', 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/aac': 'aac', 'audio/wav': 'wav', 'audio/x-wav': 'wav', 'audio/ogg': 'ogg', 'audio/webm': 'webm' };
 const VIDEO_TYPES = { 'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov' };
 /** Recibe un archivo grande por streaming (sin cargarlo en memoria). */
@@ -682,14 +675,18 @@ function receiveFile(req, types, maxBytes, prefix) {
     if (!ext) return reject(Object.assign(new Error('Formato de archivo no admitido.'), { status: 415 }));
     if (Number(req.headers['content-length']) > maxBytes) return reject(Object.assign(new Error(`El archivo supera ${Math.round(maxBytes / 1048576)} MB.`), { status: 413 }));
     const name = `${prefix}-${rid(5)}.${ext}`;
-    const dest = path.join(UPLOAD_DIR, name), tmp = dest + '.part';
+    const tmp = path.join(UPLOAD_DIR, name + '.part');
     const out = fs.createWriteStream(tmp);
     let bytes = 0, failed = false;
     const fail = (e) => { if (failed) return; failed = true; out.destroy(); fs.rm(tmp, () => {}); reject(e); };
     req.on('data', (chunk) => { bytes += chunk.length; if (bytes > maxBytes) { fail(Object.assign(new Error(`El archivo supera ${Math.round(maxBytes / 1048576)} MB.`), { status: 413 })); req.destroy(); } });
     req.on('aborted', () => fail(new Error('Carga interrumpida.')));
     req.pipe(out);
-    out.on('finish', () => { if (failed) return; if (!bytes) return fail(Object.assign(new Error('Archivo vacío.'), { status: 400 })); fs.renameSync(tmp, dest); resolve(`/uploads/${name}`); });
+    out.on('finish', () => {
+      if (failed) return;
+      if (!bytes) return fail(Object.assign(new Error('Archivo vacío.'), { status: 400 }));
+      store.putFile(name, tmp, type).then(resolve, (e) => { fs.rm(tmp, () => {}); reject(e); });
+    });
     out.on('error', fail);
   });
 }
@@ -710,13 +707,13 @@ function participantFields(body, p) {
   return f;
 }
 
-admin.post('/participants', (req, res) => {
+admin.post('/participants', async (req, res) => {
   if (db.participants.length >= MAX_PARTICIPANTS) return res.status(400).json({ error: `Máximo ${MAX_PARTICIPANTS} participantes.` });
   const b = req.body || {};
   if (!clean(b.nombre) || !clean(b.apellidos)) return res.status(400).json({ error: 'Nombre y apellidos son obligatorios.' });
   const id = rid(6);
   let photo = null;
-  try { photo = b.photo ? savePhoto(b.photo, id) : null; } catch (e) { return res.status(400).json({ error: e.message }); }
+  try { photo = b.photo ? await savePhoto(b.photo, id) : null; } catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
   const order = db.participants.reduce((m, p) => Math.max(m, p.order), 0) + 1;
   const p = { id, grado: '', nombre: '', apellidos: '', genero: '', cancion: '', descripcion: '', photo, audio: null, order, tribute: false, inEvaluation: false, ...participantFields(b) };
   db.participants.push(p);
@@ -725,16 +722,16 @@ admin.post('/participants', (req, res) => {
   res.json({ ok: true, id });
 });
 
-admin.put('/participants/:id', (req, res) => {
+admin.put('/participants/:id', async (req, res) => {
   const p = db.participants.find((x) => x.id === req.params.id);
   if (!p) return res.status(404).json({ error: 'No existe' });
   const b = req.body || {};
   const before = { inEvaluation: p.inEvaluation, tribute: p.tribute };
+  let newPhoto = null;
+  try { if (b.photo) newPhoto = await savePhoto(b.photo, p.id); } catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
   Object.assign(p, participantFields(b, p));
-  try {
-    if (b.photo) { const url = savePhoto(b.photo, p.id); removeFile(p.photo); p.photo = url; }
-    else if (b.removePhoto) { removeFile(p.photo); p.photo = null; }
-  } catch (e) { return res.status(400).json({ error: e.message }); }
+  if (newPhoto) { removeFile(p.photo); p.photo = newPhoto; }
+  else if (b.removePhoto) { removeFile(p.photo); p.photo = null; }
   const changes = [];
   if (before.inEvaluation !== p.inEvaluation) changes.push(p.inEvaluation ? 'enviado a la sala de evaluación' : 'retirado de la sala de evaluación');
   if (before.tribute !== p.tribute) changes.push(p.tribute ? 'marcado como homenaje póstumo' : 'ya no es homenaje póstumo');
@@ -1179,10 +1176,25 @@ setInterval(() => {
   for (const [id, r] of fanRate) if (now - Math.max(r.comment, ...r.likes, 0) > 120000) fanRate.delete(id);
 }, 5 * 60000).unref();
 
-process.on('SIGINT', () => { saveNow(); process.exit(0); });
-process.on('SIGTERM', () => { saveNow(); process.exit(0); });
+async function shutdown() {
+  try { await store.flush(db); } finally { process.exit(0); }
+}
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
-server.listen(PORT, '0.0.0.0', () => {
+async function start() {
+  try {
+    db = hydrate(await store.load());
+  } catch (e) {
+    // nunca arrancar vacío si no se pudo leer la base de datos: se sobrescribirían los datos reales
+    console.error(`\n  ✖ ${e.message}\n`);
+    process.exit(1);
+  }
+  saveNow();
+  server.listen(PORT, '0.0.0.0', onListen);
+}
+
+function onListen() {
   console.log('\n  🎤  Festival de la Voz Ministerial del MPPD 2026');
   console.log('  ───────────────────────────────────────────────');
   console.log(`  Página pública   : http://localhost:${PORT}/`);
@@ -1190,5 +1202,8 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`  Sala del jurado  : http://localhost:${PORT}/jurado`);
   console.log(`  Pantalla de gala : http://localhost:${PORT}/pantalla?k=${db.settings.screenKey}`);
   lanUrls().forEach((u) => console.log(`  En la red local  : ${u}`));
+  console.log(`  Almacenamiento   : ${store.mode === 'supabase' ? 'Supabase (base de datos + Storage)' : 'local (' + DATA_DIR + ')'}`);
   console.log('');
-});
+}
+
+start();

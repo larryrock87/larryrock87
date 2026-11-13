@@ -2,24 +2,29 @@
 
 Esta guía explica cómo poner el sistema de votación en un servidor de Internet, para que el público pueda votar con **datos móviles o con cualquier Wi-Fi**.
 
-> **Lo más importante:** el servidor debe tener un **disco persistente**. Ahí se guardan los votos y las fotos. Los planes gratuitos suelen borrar los archivos al reiniciarse, así que no sirven para la gala.
-
-Hay tres opciones. **La opción A es la más sencilla.**
+> **Lo más importante:** los votos, puntuaciones y fotos deben guardarse en un lugar **permanente**. Hay dos formas:
+> - **Con Supabase (recomendada)**: base de datos y archivos en la nube. Siga **[SUPABASE.md](SUPABASE.md)**.
+> - **Con un disco persistente** en el servidor (opciones B y C, o Render con disco).
+>
+> Los planes gratuitos sin disco ni Supabase borran los datos al reiniciarse, así que no sirven para la gala.
 
 ---
 
-## Opción A — Render.com (recomendada, unos 10 minutos)
+## Opción A — Render.com + Supabase (recomendada)
 
-Costo aproximado: plan *Starter* (unos 7 USD al mes) más disco persistente (unos 0,25 USD al mes). Se puede dar de baja después del festival.
+👉 Guía completa paso a paso en **[SUPABASE.md](SUPABASE.md)**. El archivo `render.yaml` ya está preparado para este modo.
 
-1. Cree una cuenta en <https://render.com> e inicie sesión con su cuenta de GitHub.
-2. Pulse **New + → Blueprint**.
-3. Elija el repositorio de este proyecto y la rama que contiene el sistema. Render lee el archivo `render.yaml` y configura todo automáticamente: región Virginia (la más cercana a Venezuela), disco de 2 GB (fotos, audios y video) y comprobación de salud.
-4. Render le pedirá el valor de **`ADMIN_PASSWORD`**. Escriba una contraseña segura de al menos 8 caracteres, por ejemplo `Gala-Voz-2026!MPPD`. Guárdela bien.
-5. Pulse **Apply** y espere unos 3 minutos, hasta que el estado diga **Live**.
-6. Render le asigna una dirección como `https://festival-voz-mppd-2026.onrender.com`:
-   - Votación del público: `https://…onrender.com/`
-   - Panel del administrador: `https://…onrender.com/admin`
+### Variante: Render con disco (sin Supabase)
+1. En Render, cree un **Web Service** a partir del repositorio (no un Blueprint), con el plan *Starter*.
+2. Configure:
+   - **Build Command**: `npm ci --omit=dev`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/healthz`
+3. Agregue estas variables:
+   - `NODE_ENV=production`
+   - `ADMIN_PASSWORD=su-contraseña`
+   - `DATA_DIR=/var/data`
+4. En **Disks → Add Disk**, use **`/var/data`** como ruta de montaje y asigne 2 GB.
 
 ### Dominio propio (opcional)
 Si tiene un dominio, por ejemplo `votacion.festivalmppd.com`, vaya a **Settings → Custom Domains** en Render, agréguelo y cree en su proveedor de dominio el registro DNS que Render le indique. El certificado HTTPS se crea solo.

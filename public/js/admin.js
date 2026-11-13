@@ -519,6 +519,12 @@
     const vb = $('#videoBox');
     if ((vb.dataset.v || '') !== (s.video || '')) { vb.dataset.v = s.video || ''; vb.innerHTML = s.video ? `<video src="${FV.esc(s.video)}" controls preload="metadata" playsinline></video>` : '<p class="muted">No hay video cargado.</p>'; }
     $('#videoRemove').hidden = !s.video;
+    const st = A.storage || {};
+    const si = $('#storageInfo');
+    si.className = 'alert ' + (st.failures ? 'err' : 'ok');
+    si.innerHTML = st.mode === 'supabase'
+      ? (st.failures ? `⚠ No se pudo guardar en Supabase (${st.failures} intentos): ${FV.esc(st.lastError || '')}. Se reintenta automáticamente; los datos siguen en memoria y en la copia local.` : `☁ Datos, fotos, audios y video guardados en <b>Supabase</b>${st.lastSavedAt ? ` · último guardado ${new Date(st.lastSavedAt).toLocaleTimeString('es-VE')}` : ''}.`)
+      : '💾 Datos guardados en el disco del servidor (modo local). Para usar Supabase vea SUPABASE.md.';
   }
   $('#saveTexts').onclick = () => api('/settings', { title: $('#sTitle').value, edition: $('#sEdition').value, year: $('#sYear').value, tagline: $('#sTagline').value, description: $('#sDesc').value }).then(() => FV.toast('Textos guardados', 'ok'));
   $('#lanUrls').onclick = (e) => { const b = e.target.closest('button'); if (b) $('#sUrl').value = b.dataset.u; };
