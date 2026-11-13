@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pantalla de Gala · Festival de la Voz</title>
+  <link rel="icon" href="/img/favicon.png">
+  <link rel="stylesheet" href="/css/theme.css">
+  <style>
+    html, body { height: 100%; overflow: hidden; background: #000; }
+    body.idle-mouse { cursor: none; }
+    #viewport { position: fixed; inset: 0; display: grid; place-items: center; overflow: hidden; background: var(--navy-950); }
+    #stage { width: 1920px; height: 1080px; position: relative; flex: none; transform-origin: center; overflow: hidden;
+      background:
+        radial-gradient(1400px 800px at 50% -15%, rgba(31,63,110,.95), transparent 62%),
+        radial-gradient(900px 700px at 105% 105%, rgba(27,63,155,.35), transparent 60%),
+        radial-gradient(900px 700px at -5% 105%, rgba(207,20,43,.18), transparent 60%),
+        linear-gradient(180deg, #0a1730, #050c1b); }
+    #stage::before { content: ''; position: absolute; inset: -30%; background: repeating-radial-gradient(circle at 50% 45%, transparent 0 78px, rgba(214,178,94,.05) 79px 80px); animation: slowspin 200s linear infinite; }
+    .dust { position: absolute; inset: 0; pointer-events: none; }
+    .dust i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #f3dc9a; box-shadow: 0 0 10px #f3dc9a; opacity: 0; animation: rise-dust linear infinite; }
+    @keyframes rise-dust { 0% { transform: translateY(0) scale(.6); opacity: 0; } 15% { opacity: .9; } 100% { transform: translateY(-1150px) scale(1.2); opacity: 0; } }
+
+    .scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .9s ease, visibility 0s .9s; }
+    .scene.on { opacity: 1; visibility: visible; transition: opacity .9s ease; }
+
+    /* ---------- Cabecera común ---------- */
+    .topbar { position: absolute; left: 60px; right: 60px; top: 34px; height: 120px; display: flex; align-items: center; gap: 26px; z-index: 3; }
+    .topbar img.logo { width: 116px; height: 116px; border-radius: 50%; filter: drop-shadow(0 6px 20px rgba(214,178,94,.45)); }
+    .topbar .ttl h1 { margin: 0; font-family: var(--font-display); font-weight: 900; font-size: 44px; line-height: 1.05; letter-spacing: .03em; }
+    .topbar .ttl .sub { margin-top: 8px; display: flex; align-items: center; gap: 16px; font-size: 18px; letter-spacing: .32em; color: var(--gold-300); font-weight: 700; }
+    .topbar .ttl .sub .tricolor-line { width: 120px; }
+    .topbar .right { margin-left: auto; display: flex; align-items: center; gap: 22px; }
+    .live { display: inline-flex; align-items: center; gap: 12px; padding: 12px 22px; border-radius: 999px; background: rgba(207,20,43,.18); box-shadow: inset 0 0 0 2px rgba(207,20,43,.7); font-weight: 800; letter-spacing: .25em; font-size: 18px; }
+    .live i { width: 14px; height: 14px; border-radius: 50%; background: var(--ve-red); animation: live 1.4s infinite; }
+    .live.off { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 2px rgba(255,255,255,.2); color: var(--silver-300); }
+    .live.off i { background: var(--silver-500); animation: none; }
+    @keyframes live { 0% { box-shadow: 0 0 0 0 rgba(207,20,43,.8); } 70% { box-shadow: 0 0 0 16px rgba(207,20,43,0); } 100% { box-shadow: 0 0 0 0 rgba(207,20,43,0); } }
+    .count-box { text-align: center; padding: 10px 26px; border-radius: 18px; background: rgba(5,12,27,.55); box-shadow: inset 0 0 0 1.5px rgba(214,178,94,.45); min-width: 210px; }
+    .count-box .lbl { font-size: 13px; letter-spacing: .3em; color: var(--silver-300); font-weight: 700; }
+    .count-box .val { font-family: var(--font-display); font-weight: 700; font-size: 46px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+    .count-box .val.urgent { color: #ff8a95; animation: blink 1s steps(2) infinite; }
+    @keyframes blink { 50% { opacity: .5; } }
+
+    /* ---------- Escena: ESPERA (QR) ---------- */
+    #s-espera .center { position: absolute; left: 0; top: 0; width: 1100px; height: 900px; display: grid; place-items: center; text-align: center; }
+    .halo { position: relative; width: 560px; height: 560px; margin: 0 auto; }
+    .halo .rays { position: absolute; inset: -140px; background: repeating-conic-gradient(from 0deg, rgba(243,220,154,.16) 0 4deg, transparent 4deg 15deg); -webkit-mask: radial-gradient(circle, #000 25%, transparent 70%); mask: radial-gradient(circle, #000 25%, transparent 70%); animation: slowspin 60s linear infinite; }
+    .halo img { position: relative; width: 100%; height: 100%; border-radius: 50%; filter: drop-shadow(0 30px 60px rgba(0,0,0,.6)) drop-shadow(0 0 50px rgba(214,178,94,.35)); animation: breathe 7s ease-in-out infinite; }
+    @keyframes breathe { 50% { transform: scale(1.025) rotate(-1deg); } }
+    .glint { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; pointer-events: none; }
+    .glint::after { content: ''; position: absolute; top: -50%; left: -60%; width: 40%; height: 200%; transform: rotate(25deg); background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); animation: glint 6s ease-in-out infinite; }
+    @keyframes glint { 0%, 60% { left: -60%; } 100% { left: 130%; } }
+    #s-espera .tagline { margin-top: 40px; font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: .08em; }
+    .qr-card { position: absolute; right: 90px; top: 150px; width: 640px; padding: 40px; text-align: center; border-radius: 34px; }
+    .qr-card .qr { background: #fff; padding: 22px; border-radius: 24px; width: 440px; height: 440px; margin: 0 auto 26px; box-shadow: 0 0 0 6px var(--gold-400), 0 0 0 12px rgba(214,178,94,.25), 0 30px 60px rgba(0,0,0,.5); position: relative; }
+    .qr-card .qr img { width: 100%; height: 100%; }
+    .qr-card .qr::after { content: ''; position: absolute; left: 22px; right: 22px; height: 4px; top: 22px; background: linear-gradient(90deg, transparent, var(--ve-red), transparent); box-shadow: 0 0 16px var(--ve-red); animation: scan 3s ease-in-out infinite; border-radius: 4px; }
+    @keyframes scan { 50% { top: calc(100% - 26px); } }
+    .qr-card h2 { margin: 0 0 8px; font-family: var(--font-display); font-size: 46px; font-weight: 900; }
+    .qr-card p { margin: 0; font-size: 22px; color: var(--silver-300); letter-spacing: .04em; }
+    .qr-card .url { margin-top: 14px; font-size: 20px; color: var(--gold-200); font-weight: 600; word-break: break-all; }
+    .qr-card .state { margin-top: 18px; display: inline-flex; gap: 12px; align-items: center; font-size: 22px; font-weight: 800; letter-spacing: .14em; }
+    .marquee { position: absolute; left: 0; right: 0; bottom: 34px; height: 150px; overflow: hidden; -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+    .marquee .track { display: flex; gap: 26px; width: max-content; animation: marquee linear infinite; }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+    .chip { display: flex; align-items: center; gap: 16px; padding: 12px 28px 12px 12px; border-radius: 999px; background: rgba(15,33,66,.8); box-shadow: inset 0 0 0 1.5px rgba(214,178,94,.4); height: 110px; margin-top: 20px; }
+    .chip .av { width: 86px; height: 86px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 3px var(--gold-400); flex: none; }
+    .chip .av img, .chip .av .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 30px; }
+    .chip .g { font-size: 14px; letter-spacing: .16em; color: var(--gold-300); font-weight: 700; text-transform: uppercase; }
+    .chip .n { font-family: var(--font-display); font-size: 26px; font-weight: 700; white-space: nowrap; }
+
+    /* ---------- Escena: PARTICIPANTES ---------- */
+    #s-participantes .gallery { position: absolute; left: 60px; right: 60px; top: 190px; bottom: 50px; display: grid; gap: 22px; align-content: center; justify-content: center; }
+    .pcard { position: relative; border-radius: 22px; overflow: hidden; box-shadow: var(--shadow-gold); background: var(--navy-800); opacity: 0; transform: translateY(30px) scale(.96); }
+    .scene.on .pcard { animation: enter .8s cubic-bezier(.2,.8,.2,1) forwards; }
+    @keyframes enter { to { opacity: 1; transform: none; } }
+    .pcard img, .pcard .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 60px; }
+    .pcard::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(5,12,27,.96)); }
+    .pcard .meta { position: absolute; left: 14px; right: 14px; bottom: 12px; z-index: 2; }
+    .pcard .meta .g { font-size: .7em; letter-spacing: .14em; color: var(--gold-300); font-weight: 700; text-transform: uppercase; }
+    .pcard .meta .n { font-family: var(--font-display); font-weight: 700; line-height: 1.1; }
+    .pcard .no { position: absolute; top: 10px; left: 10px; z-index: 2; width: 1.9em; height: 1.9em; border-radius: 50%; display: grid; place-items: center; background: var(--gold-grad); color: #2a1d02; font-family: var(--font-display); font-weight: 900; }
+
+    /* ---------- Escena: EN VIVO ---------- */
+    #s-vivo .side { position: absolute; left: 60px; top: 190px; width: 470px; bottom: 50px; display: flex; flex-direction: column; gap: 22px; }
+    .leader { padding: 26px; text-align: center; border-radius: 26px; position: relative; overflow: hidden; }
+    .leader .lbl { font-size: 16px; letter-spacing: .35em; color: var(--gold-300); font-weight: 800; }
+    .leader .pic { width: 210px; height: 210px; margin: 16px auto 14px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 5px var(--gold-400), 0 0 0 12px rgba(214,178,94,.2), 0 0 60px rgba(214,178,94,.5); }
+    .leader .pic img, .leader .pic .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 70px; }
+    .leader .g { font-size: 15px; letter-spacing: .2em; color: var(--silver-300); font-weight: 700; text-transform: uppercase; }
+    .leader .n { font-family: var(--font-display); font-weight: 900; font-size: 34px; line-height: 1.1; margin: 4px 0 10px; }
+    .leader .pct { font-family: var(--font-display); font-weight: 900; font-size: 64px; line-height: 1; }
+    .leader .crown { position: absolute; top: 18px; right: 22px; font-size: 40px; filter: drop-shadow(0 0 10px rgba(255,204,0,.7)); animation: bob 2.4s ease-in-out infinite; }
+    @keyframes bob { 50% { transform: translateY(-6px) rotate(6deg); } }
+    .leader.swap { animation: swap .9s ease; }
+    @keyframes swap { 0% { box-shadow: var(--shadow-gold); } 40% { box-shadow: 0 0 0 4px var(--ve-yellow), 0 0 80px rgba(255,204,0,.8); transform: scale(1.03); } 100% { box-shadow: var(--shadow-gold); } }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .stat { padding: 18px 20px; border-radius: 20px; }
+    .stat .lbl { font-size: 13px; letter-spacing: .25em; color: var(--silver-300); font-weight: 700; }
+    .stat .v { font-family: var(--font-display); font-weight: 900; font-size: 46px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .qr-mini { display: flex; gap: 18px; align-items: center; padding: 16px 18px; border-radius: 20px; margin-top: auto; }
+    .qr-mini img { width: 130px; height: 130px; background: #fff; padding: 8px; border-radius: 12px; flex: none; }
+    .qr-mini b { font-family: var(--font-display); font-size: 26px; display: block; margin-bottom: 4px; }
+    .qr-mini span { font-size: 16px; color: var(--silver-300); line-height: 1.4; }
+
+    .board { position: absolute; left: 570px; right: 60px; top: 190px; bottom: 50px; }
+    .row { position: absolute; left: 0; display: flex; align-items: center; gap: 14px; transition: transform 1s cubic-bezier(.25,.9,.25,1); will-change: transform; }
+    .row .pos { width: 1.6em; text-align: center; font-family: var(--font-display); font-weight: 900; color: var(--gold-200); flex: none; }
+    .row .av { border-radius: 50%; overflow: hidden; flex: none; box-shadow: 0 0 0 2px rgba(214,178,94,.7); }
+    .row .av img, .row .av .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: .9em; }
+    .row .body { flex: 1; min-width: 0; }
+    .row .label { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 5px; }
+    .row .label .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row .label .nm small { color: var(--gold-300); font-weight: 600; letter-spacing: .08em; margin-right: 8px; text-transform: uppercase; font-size: .72em; }
+    .row .label .vt { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--gold-200); }
+    .row .label .vt .c { color: var(--silver-300); font-weight: 600; margin-left: 10px; font-size: .85em; }
+    .track-bar { position: relative; border-radius: 999px; background: rgba(255,255,255,.07); box-shadow: inset 0 1px 3px rgba(0,0,0,.5); overflow: hidden; }
+    .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 999px; background: linear-gradient(90deg, #8a6a26, #d6b25e 45%, #f3dc9a 85%, #fff6dc); box-shadow: 0 0 18px rgba(214,178,94,.55); transition: width 1.1s cubic-bezier(.25,.9,.25,1); overflow: hidden; }
+    .fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.55) 50%, transparent 80%); background-size: 200% 100%; animation: shimmer 2.6s linear infinite; }
+    @keyframes shimmer { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+    .row.first .fill { background: linear-gradient(90deg, #a87d16, #ffcc00 50%, #fff3b0); box-shadow: 0 0 26px rgba(255,204,0,.7); }
+    .row.first .pos { color: var(--ve-yellow); }
+    .row.first .av { box-shadow: 0 0 0 3px var(--ve-yellow), 0 0 20px rgba(255,204,0,.6); }
+    .plus { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-weight: 900; color: #fff; text-shadow: 0 0 10px #ffcc00; animation: plus 1.2s ease-out forwards; pointer-events: none; }
+    @keyframes plus { from { opacity: 1; transform: translate(0,-50%) scale(1.3); } to { opacity: 0; transform: translate(-10px,-180%) scale(1); } }
+    .row.bump .av { animation: bump .6s ease; }
+    @keyframes bump { 40% { transform: scale(1.18); } }
+    .board.two .row .label .nm small { display: none; }
+    .board-empty { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-display); font-size: 40px; color: var(--silver-300); }
+
+    /* ---------- Escena: GANADOR ---------- */
+    #s-ganador { background: radial-gradient(circle at 50% 45%, rgba(31,63,110,.5), rgba(3,7,16,.96) 70%); }
+    .spot { position: absolute; top: -200px; width: 520px; height: 1500px; transform-origin: 50% 0; background: linear-gradient(180deg, rgba(255,246,220,.22), rgba(255,246,220,0) 80%); clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%); filter: blur(6px); mix-blend-mode: screen; }
+    .spot.l { left: 160px; animation: sweepL 6s ease-in-out infinite; }
+    .spot.r { right: 160px; animation: sweepR 6s ease-in-out infinite; }
+    @keyframes sweepL { 0%,100% { transform: rotate(-28deg); } 50% { transform: rotate(10deg); } }
+    @keyframes sweepR { 0%,100% { transform: rotate(28deg); } 50% { transform: rotate(-10deg); } }
+    .reveal-pre { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+    .reveal-pre h2 { margin: 0; font-family: var(--font-display); font-size: 74px; font-weight: 900; letter-spacing: .06em; opacity: 0; }
+    .reveal-pre .cd { font-family: var(--font-display); font-size: 300px; font-weight: 900; line-height: 1; }
+    .reveal-pre .cd.tick { animation: cd 1s ease-out; }
+    @keyframes cd { from { transform: scale(2.2); opacity: 0; filter: blur(10px); } 30% { opacity: 1; filter: none; } to { transform: scale(.9); opacity: .15; } }
+    .reveal-pre.go h2 { animation: fadein 1s ease forwards; }
+    @keyframes fadein { to { opacity: 1; } }
+    .winner { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; opacity: 0; }
+    .winner.show { animation: winIn 1.4s cubic-bezier(.2,.8,.2,1) forwards; }
+    @keyframes winIn { from { opacity: 0; transform: scale(.85); filter: blur(12px); } to { opacity: 1; transform: none; filter: none; } }
+    .winner .kick { font-size: 26px; letter-spacing: .5em; color: var(--gold-300); font-weight: 800; padding-left: .5em; }
+    .winner .medal { position: relative; width: 470px; height: 470px; margin: 28px auto 30px; }
+    .winner .medal .rays { position: absolute; inset: -220px; background: repeating-conic-gradient(rgba(255,214,120,.22) 0 5deg, transparent 5deg 14deg); -webkit-mask: radial-gradient(circle, #000 20%, transparent 68%); mask: radial-gradient(circle, #000 20%, transparent 68%); animation: slowspin 40s linear infinite; }
+    .winner .medal .ring { position: absolute; inset: -18px; border-radius: 50%; background: conic-gradient(from 0deg, #fff1c1, #b88a2e, #f3dc9a, #8a6a26, #fff1c1, #c09a43, #fff1c1); animation: slowspin 8s linear infinite; box-shadow: 0 0 90px rgba(255,204,0,.55); }
+    .winner .medal .ph { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; box-shadow: inset 0 0 0 6px #0a1730; }
+    .winner .medal .ph img, .winner .medal .ph .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 150px; }
+    .winner .multi { display: flex; gap: 40px; justify-content: center; margin: 30px 0; }
+    .winner .multi .medal { width: 330px; height: 330px; margin: 0; }
+    .winner .g { font-size: 30px; letter-spacing: .25em; color: var(--silver-300); font-weight: 700; text-transform: uppercase; }
+    .winner .n { font-family: var(--font-display); font-weight: 900; font-size: 92px; line-height: 1.05; margin: 6px 0 16px; }
+    .winner .multi + .n { font-size: 60px; }
+    .winner .res { display: inline-flex; gap: 40px; padding: 16px 44px; border-radius: 999px; font-size: 32px; font-weight: 800; }
+    .winner .res span b { font-family: var(--font-display); color: var(--gold-200); font-size: 40px; margin-right: 8px; }
+
+    /* ---------- Escena: PODIO ---------- */
+    #s-podio .podium { position: absolute; left: 0; right: 0; bottom: 0; height: 860px; display: flex; justify-content: center; align-items: flex-end; gap: 46px; }
+    .pod { width: 440px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .pod .who { opacity: 0; transform: translateY(40px); }
+    .scene.on .pod .who { animation: enter 1s cubic-bezier(.2,.8,.2,1) forwards; }
+    .pod .ph { width: 220px; height: 220px; border-radius: 50%; overflow: hidden; margin: 0 auto 16px; }
+    .pod .ph img, .pod .ph .avatar-fallback { width: 100%; height: 100%; object-fit: cover; font-size: 70px; }
+    .pod .g { font-size: 17px; letter-spacing: .2em; color: var(--silver-300); font-weight: 700; text-transform: uppercase; }
+    .pod .n { font-family: var(--font-display); font-weight: 900; font-size: 34px; line-height: 1.1; margin: 4px 0 8px; }
+    .pod .p { font-weight: 800; font-size: 26px; color: var(--gold-200); }
+    .pod .block { width: 100%; margin-top: 22px; border-radius: 20px 20px 0 0; display: grid; place-items: start center; padding-top: 24px; font-family: var(--font-display); font-weight: 900; font-size: 120px; color: rgba(42,29,2,.85); transform-origin: bottom; transform: scaleY(0); box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 -10px 60px rgba(0,0,0,.4); }
+    .scene.on .pod .block { animation: grow 1.2s cubic-bezier(.2,.8,.2,1) forwards; }
+    @keyframes grow { to { transform: scaleY(1); } }
+    .pod.p1 .block { height: 380px; background: var(--gold-grad); }
+    .pod.p2 .block { height: 270px; background: var(--silver-grad); }
+    .pod.p3 .block { height: 190px; background: linear-gradient(135deg, #f6c8a0, #b0703c 45%, #e9a978 75%, #8d5428); }
+    .pod.p1 .ph { width: 290px; height: 290px; box-shadow: 0 0 0 6px var(--ve-yellow), 0 0 70px rgba(255,204,0,.6); }
+    .pod.p1 .n { font-size: 44px; }
+    .pod.p2 .ph { box-shadow: 0 0 0 5px var(--silver-300); }
+    .pod.p3 .ph { box-shadow: 0 0 0 5px #c9874f; }
+    .pod.p2 .who, .pod.p2 .block { animation-delay: .9s !important; }
+    .pod.p3 .who, .pod.p3 .block { animation-delay: .3s !important; }
+    .pod.p1 .who, .pod.p1 .block { animation-delay: 1.6s !important; }
+
+    /* ---------- Controles flotantes ---------- */
+    .hud { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; z-index: 50; transition: opacity .4s; }
+    body.idle-mouse .hud { opacity: 0; pointer-events: none; }
+    .hud button { border: 0; border-radius: 12px; padding: 10px 14px; background: rgba(10,23,48,.85); color: var(--gold-200); font-weight: 700; box-shadow: inset 0 0 0 1px rgba(214,178,94,.5); }
+    .denied { position: fixed; inset: 0; display: none; place-items: center; z-index: 100; background: var(--navy-950); text-align: center; padding: 20px; }
+    .denied.show { display: grid; }
+    .denied h2 { font-family: var(--font-display); color: var(--gold-200); }
+    .denied p { color: var(--silver-300); }
+  </style>
+</head>
+<body>
+  <div id="viewport">
+    <div id="stage">
+      <div class="dust" id="dust"></div>
+
+      <!-- ESPERA -->
+      <section class="scene" id="s-espera">
+        <div class="center">
+          <div>
+            <div class="halo"><div class="rays"></div><img src="/img/logo.webp" alt=""><div class="glint"></div></div>
+            <div class="tagline gold-text" id="esperaTag">¡Que comience la gala!</div>
+          </div>
+        </div>
+        <div class="qr-card panel">
+          <div class="qr"><img id="qrBig" alt="Código QR de votación"></div>
+          <h2 class="gold-text">Escanea y vota</h2>
+          <p>Apunta la cámara de tu teléfono al código</p>
+          <div class="url" id="urlText"></div>
+          <div class="state" id="esperaState"></div>
+        </div>
+        <div class="marquee"><div class="track" id="marquee"></div></div>
+      </section>
+
+      <!-- PARTICIPANTES -->
+      <section class="scene" id="s-participantes">
+        <div class="topbar">
+          <img class="logo" src="/img/logo-256.webp" alt="">
+          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span>NUESTROS PARTICIPANTES</span><div class="tricolor-line"></div></div></div>
+        </div>
+        <div class="gallery" id="gallery"></div>
+      </section>
+
+      <!-- EN VIVO -->
+      <section class="scene" id="s-vivo">
+        <div class="topbar">
+          <img class="logo" src="/img/logo-256.webp" alt="">
+          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span>RESULTADOS EN VIVO</span><div class="tricolor-line"></div></div></div>
+          <div class="right">
+            <span class="live" id="liveBadge"><i></i><span>EN VIVO</span></span>
+            <div class="count-box"><div class="lbl" id="clockLbl">TIEMPO RESTANTE</div><div class="val" id="clockVal">--:--</div></div>
+          </div>
+        </div>
+        <div class="side">
+          <div class="leader panel" id="leader"></div>
+          <div class="stats">
+            <div class="stat panel"><div class="lbl">VOTOS</div><div class="v gold-text" id="stTotal">0</div></div>
+            <div class="stat panel"><div class="lbl">VOTOS / MIN</div><div class="v gold-text" id="stRate">0</div></div>
+          </div>
+          <div class="qr-mini panel"><img id="qrMini" alt=""><div><b class="gold-text">¡Vota ya!</b><span>Escanea el código con tu teléfono y elige a tu favorito.</span></div></div>
+        </div>
+        <div class="board" id="board"></div>
+      </section>
+
+      <!-- GANADOR -->
+      <section class="scene" id="s-ganador">
+        <div class="spot l"></div><div class="spot r"></div>
+        <div class="reveal-pre" id="pre"><div><h2 class="gold-text">Y el ganador es…</h2><div class="cd gold-text" id="cd"></div></div></div>
+        <div class="winner" id="winner"></div>
+      </section>
+
+      <!-- PODIO -->
+      <section class="scene" id="s-podio">
+        <div class="topbar">
+          <img class="logo" src="/img/logo-256.webp" alt="">
+          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span>PODIO DE HONOR</span><div class="tricolor-line"></div></div></div>
+        </div>
+        <div class="podium" id="podium"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="hud">
+    <button id="snd" title="Sonido (S)">🔊 Sonido</button>
+    <button id="fs" title="Pantalla completa (F)">⛶ Pantalla completa</button>
+  </div>
+  <div class="denied" id="denied"><div><img src="/img/logo-256.webp" width="160" style="margin:0 auto 20px;border-radius:50%" alt=""><h2>Acceso a la pantalla de gala</h2><p>Abra esta pantalla desde el panel de administración<br>(botón «Abrir pantalla de gala»).</p></div></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/common.js"></script>
+  <script>
+  (() => {
+    const $ = (s) => document.querySelector(s);
+    const params = new URLSearchParams(location.search);
+    const key = params.get('k') || '';
+    let token = null; try { token = localStorage.getItem('fv_admin_token'); } catch {}
+
+    let S = null, R = null, mode = null, lastReveal = 0, prevVotes = {}, leaderId = null;
+    const rateWin = []; // [t, total]
+
+    /* ---- escalado del escenario ---- */
+    function fit() { const s = Math.min(innerWidth / 1920, innerHeight / 1080); $('#stage').style.transform = `scale(${s})`; }
+    addEventListener('resize', fit); fit();
+
+    /* ---- polvo dorado ---- */
+    $('#dust').innerHTML = Array.from({ length: 46 }, () => `<i style="left:${Math.random() * 100}%;top:${100 + Math.random() * 10}%;animation-duration:${10 + Math.random() * 14}s;animation-delay:${-Math.random() * 20}s;transform:scale(${.5 + Math.random()})"></i>`).join('');
+
+    /* ---- sonido sintetizado (redoble + platillo) ---- */
+    let actx = null, soundOn = true;
+    const ensureAudio = () => { if (!actx) try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch {} if (actx && actx.state === 'suspended') actx.resume(); };
+    function noise(dur, gainV, freq, type = 'bandpass', when = 0) {
+      if (!actx || !soundOn) return;
+      const t = actx.currentTime + when;
+      const buf = actx.createBuffer(1, actx.sampleRate * dur, actx.sampleRate);
+      const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const src = actx.createBufferSource(); src.buffer = buf;
+      const f = actx.createBiquadFilter(); f.type = type; f.frequency.value = freq;
+      const g = actx.createGain(); g.gain.setValueAtTime(gainV, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+      src.connect(f).connect(g).connect(actx.destination); src.start(t);
+    }
+    function drumroll(seconds) { if (!actx) return; for (let x = 0; x < seconds; x += .045) noise(.06, .12 + (x / seconds) * .35, 1800, 'bandpass', x); }
+    function cymbal() { noise(2.6, .5, 7000, 'highpass'); noise(.4, .8, 120, 'lowpass'); }
+    function chord() {
+      if (!actx || !soundOn) return;
+      [523.25, 659.25, 783.99, 1046.5].forEach((fq, i) => {
+        const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * .08;
+        o.type = 'triangle'; o.frequency.value = fq; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.12, t + .05); g.gain.exponentialRampToValueAtTime(.001, t + 3);
+        o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 3.1);
+      });
+    }
+    $('#snd').onclick = () => { ensureAudio(); soundOn = !soundOn; $('#snd').textContent = soundOn ? '🔊 Sonido' : '🔇 Silencio'; };
+    $('#fs').onclick = () => { ensureAudio(); document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); };
+    addEventListener('keydown', (e) => { ensureAudio(); if (e.key === 'f' || e.key === 'F') $('#fs').click(); if (e.key === 's' || e.key === 'S') $('#snd').click(); });
+    addEventListener('pointerdown', ensureAudio);
+    let idleT; addEventListener('mousemove', () => { document.body.classList.remove('idle-mouse'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('idle-mouse'), 2500); });
+
+    /* ---- utilidades ---- */
+    const votingUrl = () => (S && S.publicUrl) || (location.origin + '/');
+    const titleSet = () => document.querySelectorAll('.t-title').forEach((el) => (el.textContent = `${S.title} ${S.year}`));
+
+    function setQR() {
+      const u = encodeURIComponent(votingUrl());
+      if ($('#qrBig').dataset.u !== u) { $('#qrBig').dataset.u = u; $('#qrBig').src = `/api/qr.svg?u=${u}`; $('#qrMini').src = `/api/qr.svg?u=${u}`; }
+      $('#urlText').textContent = votingUrl().replace(/^https?:\/\//, '').replace(/\/$/, '');
+    }
+
+    function switchScene(m) {
+      if (mode === m) return;
+      mode = m;
+      document.querySelectorAll('.scene').forEach((s) => s.classList.toggle('on', s.id === 's-' + m));
+    }
+
+    /* ---- ESPERA ---- */
+    function renderEspera() {
+      setQR();
+      const st = S.voting.status;
+      $('#esperaState').innerHTML = st === 'open' ? `<span class="live"><i></i>VOTACIÓN ABIERTA</span>` : st === 'closed' ? `<span class="live off"><i></i>VOTACIÓN CERRADA</span>` : `<span class="live off"><i></i>PRÓXIMAMENTE</span>`;
+      $('#esperaTag').textContent = st === 'open' ? '¡Vota por tu favorito!' : st === 'closed' ? '¡Gracias por votar!' : `${S.title}`;
+      $('#esperaTag').style.fontSize = st === 'idle' || st === 'scheduled' ? '34px' : '';
+      const ps = S.participants;
+      const key = ps.map((p) => p.id + p.photo + p.nombre).join();
+      const tr = $('#marquee');
+      if (tr.dataset.key !== key) {
+        tr.dataset.key = key;
+        const chips = ps.map((p) => `<div class="chip"><div class="av">${FV.photoHtml(p)}</div><div><div class="g">${FV.esc(p.grado || 'Nº ' + p.number)}</div><div class="n">${FV.esc(FV.fullName(p))}</div></div></div>`).join('');
+        tr.innerHTML = ps.length ? chips + chips : '';
+        tr.style.animationDuration = Math.max(20, ps.length * 6) + 's';
+      }
+    }
+
+    /* ---- PARTICIPANTES ---- */
+    function renderGallery() {
+      const ps = S.participants, n = ps.length, g = $('#gallery');
+      const key = ps.map((p) => p.id + p.photo + p.nombre + p.apellidos + p.grado).join();
+      if (g.dataset.key === key) return; g.dataset.key = key;
+      if (!n) { g.innerHTML = ''; return; }
+      // calcula columnas para que quepan en 1800x840 con proporción 3:4
+      const W = 1800, H = 840, gap = 22; let best = { c: 1, w: 0 };
+      for (let c = 1; c <= n; c++) {
+        const r = Math.ceil(n / c);
+        const w = Math.min((W - gap * (c - 1)) / c, ((H - gap * (r - 1)) / r) * .75);
+        if (w > best.w) best = { c, w };
+      }
+      const w = Math.floor(best.w), h = Math.floor(w / .75);
+      g.style.gridTemplateColumns = `repeat(${best.c}, ${w}px)`;
+      g.style.gridAutoRows = h + 'px';
+      g.style.fontSize = Math.max(13, Math.min(30, w / 9)) + 'px';
+      g.innerHTML = ps.map((p, i) => `<div class="pcard" style="animation-delay:${i * 70}ms">${FV.photoHtml(p)}<span class="no">${p.number}</span><div class="meta">${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n">${FV.esc(p.nombre)}<br>${FV.esc(p.apellidos)}</div></div></div>`).join('');
+      if (mode === 'participantes') { const s = $('#s-participantes'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on'); }
+    }
+
+    /* ---- EN VIVO ---- */
+    function layoutBoard(n) {
+      const W = 1290, H = 840;
+      const cols = n > 12 ? 2 : 1;
+      const rows = Math.max(1, Math.ceil(n / cols));
+      const gapX = 40, colW = (W - gapX * (cols - 1)) / cols;
+      const rowH = Math.min(120, H / rows);
+      return { cols, rows, colW, rowH, gapX, topPad: Math.max(0, (H - rowH * rows) / 2) };
+    }
+
+    function renderBoard() {
+      if (!R) return;
+      const board = $('#board');
+      const list = R.ranking; const n = list.length;
+      if (!n) { board.innerHTML = `<div class="board-empty">Aún no hay participantes</div>`; return; }
+      const L = layoutBoard(n);
+      board.classList.toggle('two', L.cols > 1);
+      const size = Math.max(16, Math.min(30, L.rowH * .26));
+      const av = Math.round(L.rowH * .72);
+      const barH = Math.max(10, Math.round(L.rowH * .2));
+      const max = Math.max(1, list[0].votes);
+      if (board.querySelector('.board-empty')) board.innerHTML = '';
+      const existing = new Map([...board.querySelectorAll('.row')].map((el) => [el.dataset.id, el]));
+      list.forEach((p, i) => {
+        let el = existing.get(p.id);
+        if (!el) {
+          el = document.createElement('div');
+          el.className = 'row'; el.dataset.id = p.id;
+          el.innerHTML = `<div class="pos"></div><div class="av"></div><div class="body"><div class="label"><span class="nm"></span><span class="vt"><span class="p">0%</span><span class="c"></span></span></div><div class="track-bar"><div class="fill"></div></div></div>`;
+          board.appendChild(el);
+        }
+        existing.delete(p.id);
+        const col = Math.floor(i / L.rows), r = i % L.rows;
+        el.style.width = L.colW + 'px'; el.style.height = L.rowH + 'px'; el.style.fontSize = size + 'px';
+        el.style.transform = `translate(${col * (L.colW + L.gapX)}px, ${L.topPad + r * L.rowH}px)`;
+        el.classList.toggle('first', i === 0 && p.votes > 0);
+        el.querySelector('.pos').textContent = i + 1;
+        const avEl = el.querySelector('.av'); avEl.style.width = avEl.style.height = av + 'px';
+        if (avEl.dataset.ph !== (p.photo || '') + p.nombre) { avEl.dataset.ph = (p.photo || '') + p.nombre; avEl.innerHTML = FV.photoHtml(p); }
+        el.querySelector('.nm').innerHTML = `${p.grado ? `<small>${FV.esc(p.grado)}</small>` : ''}${FV.esc(FV.fullName(p))}`;
+        el.querySelector('.track-bar').style.height = barH + 'px';
+        el.querySelector('.fill').style.width = (p.votes / max) * 100 + '%';
+        FV.tweenNumber(el.querySelector('.p'), p.pct, { decimals: 1, suffix: '%' });
+        const c = el.querySelector('.c');
+        c.style.display = S.screen.showCounts ? '' : 'none';
+        c.textContent = `${p.votes} ${p.votes === 1 ? 'voto' : 'votos'}`;
+        const before = prevVotes[p.id];
+        if (before !== undefined && p.votes > before && mode === 'vivo') {
+          el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+          const tb = el.querySelector('.track-bar');
+          const pl = document.createElement('span'); pl.className = 'plus'; pl.textContent = '+' + (p.votes - before);
+          pl.style.fontSize = size * .9 + 'px';
+          el.querySelector('.label').appendChild(pl); setTimeout(() => pl.remove(), 1300);
+        }
+        prevVotes[p.id] = p.votes;
+      });
+      existing.forEach((el) => el.remove());
+
+      // líder
+      const top = list[0];
+      const tie = list.length > 1 && list[1].votes === top.votes && top.votes > 0;
+      const ld = $('#leader');
+      if (top.votes === 0) {
+        ld.innerHTML = `<div class="lbl">ESPERANDO VOTOS</div><div class="pic"><img src="/img/logo-256.webp" alt=""></div><div class="n gold-text">¡Vota ahora!</div><div class="g">Escanea el código QR</div>`;
+        leaderId = null;
+      } else {
+        const changed = leaderId && leaderId !== top.id;
+        if (ld.dataset.k !== top.id + top.photo + tie) {
+          ld.dataset.k = top.id + top.photo + tie;
+          ld.innerHTML = `<span class="crown">👑</span><div class="lbl">${tie ? 'EMPATE EN EL PRIMER LUGAR' : 'VA A LA CABEZA'}</div><div class="pic">${FV.photoHtml(top)}</div><div class="g">${FV.esc(top.grado || '')}</div><div class="n">${FV.esc(FV.fullName(top))}</div><div class="pct gold-text" id="ldPct">0%</div>`;
+          if (changed) { ld.classList.remove('swap'); void ld.offsetWidth; ld.classList.add('swap'); }
+        }
+        const lp = $('#ldPct'); if (lp) FV.tweenNumber(lp, top.pct, { decimals: 1, suffix: '%' });
+        leaderId = top.id;
+      }
+      FV.tweenNumber($('#stTotal'), R.total);
+      const now = Date.now();
+      rateWin.push([now, R.total]);
+      while (rateWin.length && now - rateWin[0][0] > 60000) rateWin.shift();
+      const span = rateWin.length > 1 ? (now - rateWin[0][0]) / 60000 : 0;
+      const rate = span > 0.05 ? Math.max(0, (R.total - rateWin[0][1]) / Math.max(span, .25)) : 0;
+      FV.tweenNumber($('#stRate'), Math.round(rate));
+    }
+
+    function tickClock() {
+      if (!S) return;
+      const v = S.voting, lbl = $('#clockLbl'), val = $('#clockVal'), badge = $('#liveBadge');
+      if (v.status === 'open' && v.endsAt) {
+        const left = v.endsAt - FV.now();
+        lbl.textContent = 'TIEMPO RESTANTE'; val.textContent = FV.fmtTime(left); val.classList.toggle('urgent', left < 60000);
+        badge.className = 'live'; badge.lastElementChild.textContent = 'EN VIVO';
+      } else if (v.status === 'scheduled' && v.startsAt) {
+        lbl.textContent = 'INICIA EN'; val.textContent = FV.fmtTime(v.startsAt - FV.now()); val.classList.remove('urgent');
+        badge.className = 'live off'; badge.lastElementChild.textContent = 'PROGRAMADA';
+      } else {
+        lbl.textContent = 'VOTACIÓN'; val.textContent = v.status === 'closed' ? 'CERRADA' : 'EN ESPERA'; val.classList.remove('urgent');
+        val.style.fontSize = '34px';
+        badge.className = 'live off'; badge.lastElementChild.textContent = v.status === 'closed' ? 'FINALIZADA' : 'EN ESPERA';
+        return;
+      }
+      val.style.fontSize = '';
+    }
+    setInterval(tickClock, 250);
+
+    /* ---- GANADOR ---- */
+    let revealTimers = [];
+    function winners() { if (!R || !R.ranking.length) return []; const t = R.ranking[0].votes; return R.ranking.filter((p) => p.votes === t); }
+    function runReveal() {
+      revealTimers.forEach(clearTimeout); revealTimers = [];
+      const pre = $('#pre'), cd = $('#cd'), win = $('#winner');
+      win.classList.remove('show'); win.innerHTML = ''; pre.style.display = ''; pre.classList.remove('go'); cd.textContent = '';
+      void pre.offsetWidth; pre.classList.add('go');
+      drumroll(4.2);
+      [3, 2, 1].forEach((n, i) => revealTimers.push(setTimeout(() => { cd.textContent = n; cd.classList.remove('tick'); void cd.offsetWidth; cd.classList.add('tick'); }, 1200 + i * 1000)));
+      revealTimers.push(setTimeout(() => { pre.style.display = 'none'; renderWinner(); win.classList.add('show'); cymbal(); chord(); FV.confetti({ duration: 9000, count: 340 }); }, 4300));
+      revealTimers.push(setTimeout(() => FV.confetti({ duration: 6000, count: 200 }), 13000));
+    }
+    function renderWinner() {
+      const ws = winners(), win = $('#winner');
+      if (!ws.length || ws[0].votes === 0) { win.innerHTML = `<div><div class="kick">SIN VOTOS REGISTRADOS</div></div>`; return; }
+      const res = (p) => `<div class="res panel"><span><b>${p.pct.toFixed(1)}%</b>de los votos</span>${S.screen.showCounts ? `<span><b>${p.votes}</b>${p.votes === 1 ? 'voto' : 'votos'}</span>` : ''}</div>`;
+      if (ws.length === 1) {
+        const p = ws[0];
+        win.innerHTML = `<div><div class="kick">🏆 GANADOR · ${FV.esc(S.year)} 🏆</div><div class="medal"><div class="rays"></div><div class="ring"></div><div class="ph">${FV.photoHtml(p)}</div></div>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n gold-text">${FV.esc(FV.fullName(p))}</div>${res(p)}</div>`;
+      } else {
+        win.innerHTML = `<div><div class="kick">🏆 ¡EMPATE EN EL PRIMER LUGAR! 🏆</div><div class="multi">${ws.slice(0, 4).map((p) => `<div><div class="medal"><div class="ring"></div><div class="ph">${FV.photoHtml(p)}</div></div></div>`).join('')}</div><div class="n gold-text">${ws.map((p) => FV.esc(FV.fullName(p))).join(' · ')}</div>${res(ws[0])}</div>`;
+      }
+    }
+
+    /* ---- PODIO ---- */
+    function renderPodium() {
+      const top = (R ? R.ranking : []).slice(0, 3);
+      const order = [[top[1], 'p2', 2], [top[0], 'p1', 1], [top[2], 'p3', 3]];
+      $('#podium').innerHTML = order.map(([p, cls, n]) => p ? `<div class="pod ${cls}"><div class="who"><div class="ph">${FV.photoHtml(p)}</div>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n">${FV.esc(FV.fullName(p))}</div><div class="p">${p.pct.toFixed(1)}%${S.screen.showCounts ? ` · ${p.votes} votos` : ''}</div></div><div class="block">${n}</div></div>` : '').join('');
+      const s = $('#s-podio'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on');
+      revealTimers.push(setTimeout(() => { cymbal(); FV.confetti({ duration: 5000, count: 220 }); }, 2400));
+    }
+
+    /* ---- render general ---- */
+    function render() {
+      if (!S) return;
+      titleSet();
+      const m = S.screen.mode;
+      const enteringReveal = (m === 'ganador' || m === 'podio') && S.screen.revealAt !== lastReveal;
+      switchScene(m);
+      renderEspera();
+      renderGallery();
+      renderBoard();
+      if (enteringReveal) {
+        lastReveal = S.screen.revealAt;
+        revealTimers.forEach(clearTimeout); revealTimers = [];
+        if (m === 'ganador') runReveal(); else renderPodium();
+      } else if (m === 'ganador' && $('#winner').classList.contains('show')) renderWinner();
+    }
+
+    const socket = io({ auth: { role: 'screen', k: key, token } });
+    socket.on('screen', (s) => { FV.syncClock(s.now); S = s; R = s.results; $('#denied').classList.remove('show'); render(); });
+    socket.on('results', (r) => { R = r; if (S) { renderBoard(); if (mode === 'ganador' && $('#winner').classList.contains('show')) renderWinner(); } });
+    socket.on('state', (s) => { FV.syncClock(s.now); if (S) { S = { ...S, ...s, voting: { ...S.voting, ...s.voting } }; renderEspera(); renderGallery(); } });
+    socket.on('screen-denied', () => $('#denied').classList.add('show'));
+  })();
+  </script>
+</body>
+</html>
