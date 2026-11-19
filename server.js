@@ -448,7 +448,12 @@ app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '7d' })); // admite Ran
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public/admin.html')));
 app.get('/pantalla', (req, res) => res.sendFile(path.join(__dirname, 'public/pantalla.html')));
 app.get('/jurado', (req, res) => res.sendFile(path.join(__dirname, 'public/jurado.html')));
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: '1h' }));
+// Páginas, scripts y estilos se revalidan en cada visita (así una instalación nueva se ve de inmediato
+// y no queda un script viejo en el navegador); las imágenes se guardan un día.
+app.use(express.static(path.join(__dirname, 'public'), {
+  extensions: ['html'],
+  setHeaders: (res, file) => res.setHeader('Cache-Control', /\.(?:html|js|css)$/i.test(file) ? 'no-cache' : 'public, max-age=86400'),
+}));
 
 /* ================================================================== */
 /* API pública: estado y Voz de la Audiencia                           */
