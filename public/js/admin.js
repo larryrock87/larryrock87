@@ -524,7 +524,10 @@
     si.className = 'alert ' + (st.failures ? 'err' : 'ok');
     si.innerHTML = st.mode === 'supabase'
       ? (st.failures ? `⚠ No se pudo guardar en Supabase (${st.failures} intentos): ${FV.esc(st.lastError || '')}. Se reintenta automáticamente; los datos siguen en memoria y en la copia local.` : `☁ Datos, fotos, audios y video guardados en <b>Supabase</b>${st.lastSavedAt ? ` · último guardado ${new Date(st.lastSavedAt).toLocaleTimeString('es-VE')}` : ''}.`)
-      : '💾 Datos guardados en el disco del servidor (modo local). Para usar Supabase vea SUPABASE.md.';
+      : (st.ephemeral
+        ? '⚠ <b>Los datos se BORRAN con cada instalación.</b> Falta la variable <code>DATA_DIR=/var/data</code> (y un disco con esa ruta) en Render. Descargue un respaldo ahora.'
+        : `💾 Datos guardados en el disco del servidor: <code>${FV.esc(st.dir || '')}</code>. Verifique que sea la ruta de su disco permanente (en Render, <code>/var/data</code>).`);
+    if (st.ephemeral) si.className = 'alert err';
   }
   $('#saveTexts').onclick = () => api('/settings', { title: $('#sTitle').value, edition: $('#sEdition').value, year: $('#sYear').value, tagline: $('#sTagline').value, description: $('#sDesc').value }).then(() => FV.toast('Textos guardados', 'ok'));
   $('#lanUrls').onclick = (e) => { const b = e.target.closest('button'); if (b) $('#sUrl').value = b.dataset.u; };
@@ -540,6 +543,22 @@
   };
   $('#videoRemove').onclick = async () => { if (await confirmBox('Quitar video', 'El video dejará de mostrarse en la página de inicio.', 'Quitar')) api('/media/video', null, 'DELETE'); };
   $('#backup').onclick = () => download('/backup.json', 'respaldo-festival.json');
+  $('#restore').onclick = () => $('#restoreFile').click();
+  $('#restoreFile').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    let data;
+    try { data = JSON.parse(await f.text()); } catch { return FV.toast('El archivo no es un respaldo válido (.json).', 'error'); }
+    if (!data || !Array.isArray(data.participants)) return FV.toast('El archivo no parece un respaldo del festival.', 'error');
+    const n = { p: data.participants.length, j: (data.judges || []).length, c: (data.comments || []).length };
+    if (!(await confirmBox('Restaurar respaldo', `El respaldo contiene <b>${n.p} participantes</b>, <b>${n.j} jurados</b> y <b>${n.c} comentarios</b>. <br><br>Reemplazará <b>todo lo que hay ahora</b> (se guarda una copia de lo actual en el servidor). Las fotos y audios no vienen en el respaldo: se reconectan solos si siguen en el disco.`, 'Restaurar'))) return;
+    try {
+      const r = await api('/restore', data);
+      const falta = r.photosMissing ? ` Faltan ${r.photosMissing} fotos y ${r.audiosMissing} audios: súbalos de nuevo en Participantes (Editar).` : '';
+      FV.toast(`Restaurado: ${r.participantes} participantes, ${r.jurados} jurados, ${r.likes} me gusta, ${r.comentarios} comentarios. Fotos reconectadas: ${r.relinked.photos}.${falta}`, r.photosMissing ? 'info' : 'ok');
+    } catch {}
+  };
+  $('#relink').onclick = () => api('/relink-media', {}).then((r) => FV.toast(r.storage !== 'local' ? 'Con Supabase los archivos ya se enlazan solos.' : `Reconectadas ${r.photos} fotos, ${r.audios} audios${r.video ? ' y el video' : ''}.`, 'ok')).catch(() => {});
   $('#resetVotes').onclick = async () => { if (await confirmBox('Reiniciar votos del público', 'Se borrarán <b>todos los votos</b> de la Voz de la Audiencia y sus ajustes. No se puede deshacer.', 'Reiniciar')) api('/voting/reset', {}).then(() => FV.toast('Votos reiniciados', 'ok')); };
   $('#resetJury').onclick = async () => { if (await confirmBox('Reiniciar evaluación del jurado', 'Se borrarán <b>todas las puntuaciones</b>, desempates y aprobaciones del jurado. Los jurados y participantes se conservan. No se puede deshacer.', 'Reiniciar')) api('/jury/reset', {}).then(() => FV.toast('Evaluación reiniciada', 'ok')); };
 

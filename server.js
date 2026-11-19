@@ -103,6 +103,37 @@ function hydrate(raw) {
   return d;
 }
 
+/**
+ * Reconecta fotos, audios y video que existen en el disco pero que el estado no
+ * conoce (por ejemplo, tras restaurar un respaldo, que no incluye los archivos).
+ * Los nombres de archivo contienen el id del participante.
+ */
+function relinkMedia() {
+  const out = { photos: 0, audios: 0, video: 0, lostPhotos: 0, lostAudios: 0, lostVideo: 0 };
+  if (store.mode !== 'local') return out;
+  let files = [];
+  try { files = fs.readdirSync(UPLOAD_DIR).filter((f) => !f.endsWith('.part')); } catch { return out; }
+  const missing = (url) => !url || (url.startsWith('/uploads/') && !fs.existsSync(path.join(UPLOAD_DIR, path.basename(url))));
+  const newest = (re) => files.filter((f) => re.test(f)).map((f) => ({ f, t: fs.statSync(path.join(UPLOAD_DIR, f)).mtimeMs })).sort((a, b) => b.t - a.t)[0]?.f;
+  const dead = (url) => !!url && missing(url); // enlace a un archivo que ya no existe
+  for (const p of db.participants) {
+    if (!/^[a-f0-9]+$/.test(p.id)) continue;
+    if (missing(p.photo)) {
+      const f = newest(new RegExp(`^(?:foto-)?${p.id}-[a-f0-9]+\\.(?:jpe?g|png|webp)$`, 'i'));
+      if (f) { p.photo = '/uploads/' + f; out.photos++; } else if (dead(p.photo)) { p.photo = null; out.lostPhotos++; }
+    }
+    if (missing(p.audio)) {
+      const f = newest(new RegExp(`^voz-${p.id}-[a-f0-9]+\\.(?:mp3|m4a|aac|wav|ogg|webm)$`, 'i'));
+      if (f) { p.audio = '/uploads/' + f; out.audios++; } else if (dead(p.audio)) { p.audio = null; out.lostAudios++; }
+    }
+  }
+  if (missing(db.settings.video)) {
+    const f = newest(/^video-[a-f0-9]+\.(?:mp4|webm|mov)$/i);
+    if (f) { db.settings.video = '/uploads/' + f; out.video++; } else if (dead(db.settings.video)) { db.settings.video = null; out.lostVideo = 1; }
+  }
+  return out;
+}
+
 // Guardado con límite de frecuencia (local cada 300 ms; Supabase como máximo 1 vez por segundo)
 const save = () => store.save(db);
 const saveNow = () => store.saveNow(db);
@@ -272,7 +303,7 @@ function adminState() {
     maxParticipants: MAX_PARTICIPANTS,
     maxJudges: MAX_JUDGES,
     lanUrls: lanUrls(),
-    storage: store.status(),
+    storage: { ...store.status(), ephemeral: IS_PROD && store.mode === 'local' && !process.env.DATA_DIR },
     jury: juryAdminState(),
     community: communityAdminState(),
   };
@@ -1103,6 +1134,30 @@ admin.get('/backup.json', (req, res) => {
   const { sessions, ...rest } = db;
   res.set('Content-Disposition', `attachment; filename="respaldo-festival-${new Date().toISOString().slice(0, 10)}.json"`).json(rest);
 });
+/* --- restaurar un respaldo (el archivo descargado con «Descargar respaldo») --- */
+admin.post('/restore', (req, res) => {
+  const raw = req.body;
+  if (!raw || typeof raw !== 'object' || !Array.isArray(raw.participants) || !raw.settings || typeof raw.settings !== 'object' || !raw.voting || typeof raw.voting !== 'object') {
+    return res.status(400).json({ error: 'El archivo no parece un respaldo del festival.' });
+  }
+  saveNow(); store.snapshot('antes-de-restaurar'); // lo que había queda guardado en la carpeta backups
+  const keepSessions = db.sessions, keepKey = db.settings.screenKey;
+  const restored = hydrate(raw);
+  restored.sessions = keepSessions;             // la sesión del administrador y de los jurados sigue activa
+  restored.settings.screenKey = keepKey;        // las pantallas abiertas siguen funcionando
+  db = restored;
+  const re = relinkMedia();
+  const counts = { participantes: db.participants.length, jurados: db.judges.length, comentarios: db.comments.length, likes: Object.values(db.likes || {}).reduce((n, o) => n + Object.keys(o).length, 0), puntuaciones: Object.values(db.scores || {}).reduce((n, o) => n + Object.keys(o).length, 0) };
+  log('configuracion', 'Administrador', `Restauró un respaldo: ${counts.participantes} participantes, ${counts.jurados} jurados, ${counts.likes} me gusta, ${counts.comentarios} comentarios, ${counts.puntuaciones} puntuaciones.`);
+  saveNow(); broadcastAll(); broadcastJury();
+  res.json({ ok: true, ...counts, relinked: re, photosMissing: db.participants.filter((p) => !p.photo).length, audiosMissing: db.participants.filter((p) => !p.audio).length });
+});
+admin.post('/relink-media', (req, res) => {
+  const re = relinkMedia();
+  log('configuracion', 'Administrador', `Reconectó archivos del disco: ${re.photos} fotos, ${re.audios} audios${re.video ? ', 1 video' : ''}.`);
+  save(); broadcastAll();
+  res.json({ ok: true, ...re, storage: store.mode });
+});
 admin.get('/export.csv', (req, res) => {
   const r = results();
   const rows = [['Puesto', 'N°', 'Grado', 'Nombre', 'Apellidos', 'Categoría', 'Votos reales', 'Ajuste', 'Votos finales', 'Porcentaje', 'Me gusta']];
@@ -1192,6 +1247,8 @@ async function start() {
     console.error(`\n  ✖ ${e.message}\n`);
     process.exit(1);
   }
+  const re = relinkMedia();
+  if (re.photos || re.audios || re.video) console.log(`  ↻ Se reconectaron archivos del disco: ${re.photos} fotos, ${re.audios} audios, ${re.video} video.`);
   saveNow();
   server.listen(PORT, '0.0.0.0', onListen);
 }
@@ -1205,6 +1262,7 @@ function onListen() {
   console.log(`  Pantalla de gala : http://localhost:${PORT}/pantalla?k=${db.settings.screenKey}`);
   lanUrls().forEach((u) => console.log(`  En la red local  : ${u}`));
   console.log(`  Almacenamiento   : ${store.mode === 'supabase' ? 'Supabase (base de datos + Storage)' : 'local (' + DATA_DIR + ')'}`);
+  if (IS_PROD && store.mode === 'local' && !process.env.DATA_DIR) console.log('  ⚠ DATA_DIR no está definida: los datos se guardan en una carpeta temporal y se BORRAN con cada instalación. Defina DATA_DIR=/var/data y agregue un disco en Render.');
   console.log('');
 }
 

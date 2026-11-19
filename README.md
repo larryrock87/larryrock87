@@ -76,6 +76,15 @@ Variables opcionales:
 
 Pruebas automáticas de la lógica del jurado y del filtro de comentarios: `npm test`.
 
+## 💾 Respaldo y restauración
+
+En el panel, pestaña **Página y QR → Seguridad y respaldo**:
+- **Descargar respaldo**: guarda un archivo `.json` con participantes, jurados (usuarios y claves), puntuaciones, me gusta, comentarios y el historial. **No incluye las fotos, audios ni el video**, solo los enlaces.
+- **Restaurar respaldo**: sube ese archivo y recupera todo. Antes de restaurar, el sistema guarda una copia de lo que había en la carpeta `backups/` del disco.
+- **Reconectar fotos y audios**: vuelve a enlazar los archivos que siguen en el disco pero que el sistema no reconoce.
+- Cada vez que el sistema arranca guarda una copia automática en `backups/` (las últimas 15).
+- **En Render hace falta un disco permanente** (ruta `/var/data` y variable `DATA_DIR=/var/data`). Sin él, los datos se borran con cada instalación; el panel muestra un aviso en rojo si falta.
+
 ## 🌐 Publicar en Internet
 
 - **Recomendado: Render + Supabase**. Siga **[SUPABASE.md](SUPABASE.md)**. Supabase guarda los datos, las fotos, los audios y el video; el servidor en Render muestra las páginas y el tiempo real. El público escanea el QR y entra con Wi-Fi o datos móviles.
