@@ -46,7 +46,8 @@ Escenas que el administrador cambia en vivo:
 - Voz de la Audiencia en vivo (barras que se llenan)
 - Revelación de la Voz de la Audiencia
 - Podio de la audiencia
-- **Premiación del jurado**: se revela el **3.er**, luego el **2.º** y luego el **1.er lugar**, con la Voz Femenina y la Voz Masculina lado a lado, redoble, platillo y confeti. Al final se muestra el **podio completo** de ambas categorías.
+- **Mensajes editables**: en el panel, pestaña **Mensajes de pantalla**, el administrador puede cambiar u ocultar cualquier texto de la pantalla de gala.
+- **Premiación del jurado** (la pantalla nunca muestra desempates ni modificaciones, y lo proyectado no cambia hasta que el administrador lo presente de nuevo): se revela el **3.er**, luego el **2.º** y luego el **1.er lugar**, con la Voz Femenina y la Voz Masculina lado a lado, redoble, platillo y confeti. Al final se muestra el **podio completo** de ambas categorías.
 
 ### Panel del administrador
 - **Participantes** (hasta 30): agregar, editar, cambiar foto o audio, eliminar, reordenar, marcar homenaje póstumo y **enviar a la sala de evaluación**.

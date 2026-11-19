@@ -46,6 +46,7 @@
       <button data-tab="jurado">⚖️ Jurado <span id="jBadge"></span></button>
       <button data-tab="audiencia">★ Voz de la Audiencia</button>
       <button data-tab="comunidad">💬 Comunidad <span id="cBadge"></span></button>
+      <button data-tab="mensajes">✏️ Mensajes de pantalla</button>
       <button data-tab="pagina">🌐 Página y QR</button>
       <button data-tab="historial">📜 Historial</button>
     </nav>
@@ -243,6 +244,20 @@
             <div class="comments" id="comments"></div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ===================== MENSAJES DE PANTALLA ===================== -->
+    <section class="tab" id="tab-mensajes">
+      <div class="card panel">
+        <h2>Mensajes de la pantalla de gala</h2>
+        <p class="muted small" style="margin-top:-6px">Edite cualquier texto que aparece en la pantalla de gala. Deje el campo igual al original para mantenerlo; marque <b>Ocultar</b> para que no se muestre. Puede usar <code>{year}</code> (año) y <code>{title}</code> (nombre del festival).</p>
+        <div class="row" style="margin-bottom:12px">
+          <button class="btn sm" id="stSave">💾 Guardar mensajes</button>
+          <button class="btn ghost sm" id="stReset">↺ Restaurar todos los originales</button>
+          <a class="btn blue sm" id="stOpen" target="_blank" rel="noopener">📺 Ver la pantalla</a>
+        </div>
+        <div id="stGroups"></div>
       </div>
     </section>
 
