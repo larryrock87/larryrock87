@@ -17,7 +17,6 @@ const compression = require('compression');
 const J = require('./lib/jury');
 const { esOfensivo, tieneEnlace } = require('./lib/filtro');
 const { createStore } = require('./lib/store');
-const ST = require('./lib/screenTexts');
 
 const PORT = Number(process.env.PORT) || 3000;
 const IS_PROD = process.env.NODE_ENV === 'production';
@@ -67,7 +66,6 @@ function defaultDb() {
       publicUrl: '',
       strictMode: false,
       screenKey: rid(6),
-      screenTexts: {},        // mensajes de la pantalla de gala editados por el administrador
     },
     participants: [],         // {id, grado, nombre, apellidos, genero, cancion, descripcion, photo, audio, order, tribute, inEvaluation}
     voting: { status: 'idle', round: rid(6), startsAt: null, endsAt: null, openedOnce: false },
@@ -82,7 +80,7 @@ function defaultDb() {
     decisions: { F: {}, M: {} }, // desempates resueltos: genero -> puesto -> {id, candidates, by, t}
     approvals: {},            // judgeId -> {ok, note, sig, t}
     audit: [],
-    screen: { mode: 'espera', showCounts: true, revealAt: 0, awardStep: 3, awardSnapshot: null },
+    screen: { mode: 'espera', showCounts: true, revealAt: 0, awardStep: 3 },
     sessions: {},             // token -> {role, judgeId?, exp}
   };
 }
@@ -94,7 +92,6 @@ function hydrate(raw) {
   const d = Object.assign(defaultDb(), raw);
   d.settings = Object.assign(defaultDb().settings, raw.settings);
   d.screen = Object.assign(defaultDb().screen, raw.screen);
-  if (!d.settings.screenTexts || typeof d.settings.screenTexts !== 'object') d.settings.screenTexts = {};
   d.jury = Object.assign(defaultDb().jury, raw.jury);
   d.decisions = Object.assign({ F: {}, M: {} }, raw.decisions);
   // migración de versiones anteriores
@@ -252,18 +249,9 @@ function juryStateFor(judgeId) {
   };
 }
 
-// Lo que se ve en la pantalla de gala: solo puesto, participante y porcentaje.
-// Nunca incluye marcas de desempate ni de modificaciones del administrador.
-function screenWinners(winners) {
-  const clean = (list) => (list || []).map((w) => ({ position: w.position, id: w.id, number: w.number, grado: w.grado, nombre: w.nombre, apellidos: w.apellidos, genero: w.genero, photo: w.photo, pct: w.pct }));
-  return { F: clean(winners.F), M: clean(winners.M) };
-}
-// La premiación se "congela" cuando el administrador la presenta: cambios posteriores
-// (puntuaciones, desempates) no alteran lo proyectado hasta que él la presente de nuevo.
-function takeAwardSnapshot() { db.screen.awardSnapshot = screenWinners(juryResults().winners); }
 function awardsForScreen() {
-  if (!db.screen.awardSnapshot) takeAwardSnapshot();
-  return { step: db.screen.awardStep, winners: db.screen.awardSnapshot };
+  const R = juryResults();
+  return { step: db.screen.awardStep, winners: R.winners, allApproved: R.allApproved };
 }
 
 /* --- Comunidad --- */
@@ -283,7 +271,6 @@ function adminState() {
     maxJudges: MAX_JUDGES,
     lanUrls: lanUrls(),
     storage: store.status(),
-    screenTexts: { defs: ST.DEFS, groups: ST.GROUPS, hide: ST.HIDE, overrides: db.settings.screenTexts || {} },
     jury: juryAdminState(),
     community: communityAdminState(),
   };
@@ -305,8 +292,7 @@ function screenState() {
     ...ps,
     participants: sortedParticipants().map((p) => ({ id: p.id, number: p.number, grado: p.grado, nombre: p.nombre, apellidos: p.apellidos, genero: p.genero, cancion: p.cancion, descripcion: p.descripcion, photo: p.photo, tribute: p.tribute })),
     voting: { ...ps.voting, startsAt: db.voting.startsAt, scheduledEndsAt: db.voting.endsAt },
-    screen: { mode: db.screen.mode, showCounts: db.screen.showCounts, revealAt: db.screen.revealAt, awardStep: db.screen.awardStep },
-    texts: ST.resolveTexts(db.settings.screenTexts, { year: db.settings.year, title: db.settings.title }),
+    screen: db.screen,
     publicUrl: db.settings.publicUrl,
     results: screenResults(),
     awards: db.screen.mode === 'premiacion' ? awardsForScreen() : null,
@@ -615,17 +601,17 @@ jury.post('/score', (req, res) => {
   broadcastJury();
 });
 
-/** Registra (o corrige) el voto de un jurado en un desempate y recalcula el resultado. */
-function castTieVote(tie, judgeId, participantId, actor) {
-  const rec = db.tieVotes[tie.key] || (db.tieVotes[tie.key] = { candidates: tie.candidates.map((c) => c.id), original: tie.original, votes: {}, round: 1, needsAdmin: false });
-  const judge = db.judges.find((x) => x.id === judgeId);
-  const p = participantId ? db.participants.find((x) => x.id === participantId) : null;
-  const was = rec.votes[judgeId] && db.participants.find((x) => x.id === rec.votes[judgeId]);
-  if (participantId) rec.votes[judgeId] = participantId; else delete rec.votes[judgeId];
-  rec.needsAdmin = false;
-  const where = `desempate del ${tie.position}.º lugar (${J.GENDER_NAME[tie.genero]}, ronda ${rec.round})`;
-  if (actor === 'admin') log('alteracion', 'Administrador', p ? `Modificó el voto de ${judge ? judge.nombre : 'un jurado'} en el ${where}: ${was ? fullName(was) : 'sin voto'} → ${fullName(p)}.` : `Quitó el voto de ${judge ? judge.nombre : 'un jurado'} en el ${where}.`);
-  else log('desempate', judge ? judge.nombre : 'Jurado', `Votó en el ${where} por ${fullName(p)}.`);
+jury.post('/tie', (req, res) => {
+  const { key, participantId } = req.body || {};
+  const R = juryResults();
+  const tie = R.ties.find((t) => t.key === key);
+  if (!R.deliberation || !tie) return res.status(409).json({ error: 'Este desempate ya no está activo.' });
+  if (tie.needsAdmin) return res.status(409).json({ error: 'El administrador resolverá este empate.' });
+  if (!tie.candidates.some((c) => c.id === participantId)) return res.status(400).json({ error: 'Seleccione uno de los participantes empatados.' });
+  const rec = db.tieVotes[key] || (db.tieVotes[key] = { candidates: tie.candidates.map((c) => c.id), original: tie.original, votes: {}, round: 1, needsAdmin: false });
+  rec.votes[req.judge.id] = participantId;
+  const p = db.participants.find((x) => x.id === participantId);
+  log('desempate', req.judge.nombre, `Votó en el desempate del ${tie.position}.º lugar (${J.GENDER_NAME[tie.genero]}, ronda ${rec.round}) por ${fullName(p)}.`);
   const tally = J.tallyTie(rec, judgeIds());
   if (tally.status === 'resolved') {
     db.decisions[tie.genero][tie.position] = { id: tally.winner, candidates: rec.original, by: 'jurado', t: Date.now() };
@@ -638,19 +624,8 @@ function castTieVote(tie, judgeId, participantId, actor) {
     rec.needsAdmin = true;
     log('desempate', 'Sistema', `El jurado no logró desempatar el ${tie.position}.º lugar (${J.GENDER_NAME[tie.genero]}). Decide el administrador.`);
   }
-  return tally.status;
-}
-
-jury.post('/tie', (req, res) => {
-  const { key, participantId } = req.body || {};
-  const R = juryResults();
-  const tie = R.ties.find((t) => t.key === key);
-  if (!R.deliberation || !tie) return res.status(409).json({ error: 'Este desempate ya no está activo.' });
-  if (tie.needsAdmin) return res.status(409).json({ error: 'El administrador resolverá este empate.' });
-  if (!tie.candidates.some((c) => c.id === participantId)) return res.status(400).json({ error: 'Seleccione uno de los participantes empatados.' });
-  const status = castTieVote(tie, req.judge.id, participantId, 'judge');
   saveNow();
-  res.json({ ok: true, status });
+  res.json({ ok: true, status: tally.status });
   broadcastJury();
 });
 
@@ -1006,26 +981,6 @@ admin.post('/jury/decide', (req, res) => {
   saveNow(); broadcastAll(); broadcastJury();
   res.json({ ok: true });
 });
-admin.put('/jury/tievote', (req, res) => {
-  const { key, judgeId, participantId } = req.body || {};
-  const R = juryResults();
-  const tie = R.ties.find((t) => t.key === key);
-  if (!tie) return res.status(409).json({ error: 'Este desempate ya no está activo.' });
-  if (!db.judges.some((j) => j.id === judgeId)) return res.status(404).json({ error: 'Jurado no encontrado.' });
-  if (participantId && !tie.candidates.some((c) => c.id === participantId)) return res.status(400).json({ error: 'Seleccione uno de los participantes empatados.' });
-  const status = castTieVote(tie, judgeId, participantId || null, 'admin');
-  saveNow(); broadcastAll(); broadcastJury();
-  res.json({ ok: true, status });
-});
-admin.post('/jury/decisions/reopen', (req, res) => {
-  const g = req.body?.genero, pos = Number(req.body?.position);
-  if (!J.GENDERS.includes(g) || ![1, 2, 3].includes(pos)) return res.status(400).json({ error: 'Datos inválidos.' });
-  for (const p of [1, 2, 3]) if (p >= pos) delete db.decisions[g][p];
-  for (const k of Object.keys(db.tieVotes)) { const [kg, kp] = k.split(':'); if (kg === g && Number(kp) >= pos) delete db.tieVotes[k]; }
-  log('alteracion', 'Administrador', `Reabrió el desempate del ${pos}.º lugar (${J.GENDER_NAME[g]}): los jurados deben votar de nuevo.`);
-  saveNow(); broadcastAll(); broadcastJury();
-  res.json({ ok: true });
-});
 admin.post('/jury/decisions/clear', (req, res) => {
   db.decisions = { F: {}, M: {} }; db.tieVotes = {};
   log('alteracion', 'Administrador', 'Anuló todos los desempates (los jurados deberán votarlos de nuevo).');
@@ -1095,7 +1050,6 @@ admin.post('/screen', (req, res) => {
     if (['ganador', 'podio', 'premiacion', 'homenaje'].includes(mode)) db.screen.revealAt = Date.now();
   }
   if ([0, 1, 2, 3].includes(awardStep)) { db.screen.awardStep = awardStep; db.screen.revealAt = Date.now(); }
-  if (mode === 'premiacion' || awardStep !== undefined) takeAwardSnapshot();
   if (typeof showCounts === 'boolean') db.screen.showCounts = showCounts;
   if (mode === 'premiacion' || awardStep !== undefined) log('premiacion', 'Administrador', `Mostró en pantalla: ${['podio completo', '1.er lugar', '2.º lugar', '3.er lugar'][db.screen.awardStep]} (jurado).`);
   save(); broadcastAll();
@@ -1123,14 +1077,6 @@ admin.post('/settings', (req, res) => {
     }
   }
   if (b.regenScreenKey) s.screenKey = rid(6);
-  save(); broadcastAll();
-  res.json({ ok: true });
-});
-admin.put('/screen-texts', (req, res) => {
-  const b = req.body || {};
-  if (b.reset) db.settings.screenTexts = {};
-  else db.settings.screenTexts = ST.applyOverrides(db.settings.screenTexts, b.texts);
-  log('configuracion', 'Administrador', b.reset ? 'Restauró todos los mensajes de la pantalla de gala.' : 'Editó los mensajes de la pantalla de gala.');
   save(); broadcastAll();
   res.json({ ok: true });
 });

@@ -93,7 +93,7 @@
     if (!A) return;
     $('#hTitle').textContent = `${A.settings.title} ${A.settings.year}`;
     $('#openScreen').href = screenLink();
-    renderVoting(); renderScreen(); renderAwards(); renderResults(); renderParticipants(); renderJury(); renderJuryMini(); renderCommunity(); renderLikes(); renderSettings(); renderScreenTexts(); renderAudit();
+    renderVoting(); renderScreen(); renderAwards(); renderResults(); renderParticipants(); renderJury(); renderJuryMini(); renderCommunity(); renderLikes(); renderSettings(); renderAudit();
   }
 
   /* ================= controles de tiempo (reutilizables) ================= */
@@ -180,7 +180,6 @@
       : !R.allResolved ? '⚠ Hay empates pendientes de resolver.'
       : R.allApproved ? `✓ Resultados certificados por los ${A.jury.judges.length} jurados. Revele del 3.er al 1.er lugar.`
       : `⚠ Aún no todos los jurados aprobaron (${R.approvedBy.length}/${A.jury.judges.length}). Puede mostrarlos igualmente.`;
-    $('#awardNote').innerHTML += '<br><span class="muted">Lo que usted modifique (puntuaciones, desempates) <b>no se ve en la pantalla</b> hasta que pulse de nuevo 3.er, 2.º, 1.er o podio completo. La pantalla nunca muestra desempates ni cambios.</span>';
     $$('#awards button').forEach((b) => (b.disabled = !n));
   }
   $('#awards').onclick = async (e) => {
@@ -411,13 +410,11 @@
         <div class="muted small">${t.total} puntos cada uno. ${t.needsAdmin ? '<b style="color:#ffe48a">El jurado no logró mayoría: decida usted.</b>' : `Votos del jurado: ${Object.keys(t.votes).length}/${J.judges.length}.`}</div>
         <div class="cands">${t.candidates.map((c) => {
           const voters = Object.entries(t.votes).filter(([, v]) => v === c.id).map(([j]) => nameOf(j));
-          return `<div class="cand"><span class="av">${FV.photoHtml(c)}</span><span class="grow">${FV.esc(FV.fullName(c))}<small>${voters.length ? 'Votos: ' + voters.map(FV.esc).join(', ') : 'Sin votos'}</small></span><button class="btn sm" data-decide="${t.key}" data-pid="${c.id}">⚡ Decidir ahora</button></div>`;
-        }).join('')}</div>
-        <div class="votes-edit"><div class="muted small"><b>Editar el voto de cada jurado</b> (se recalcula al instante):</div>
-        ${J.judges.map((j) => `<div class="jv"><span>${FV.esc(j.nombre)}</span><select data-tievote="${t.key}" data-judge="${j.id}"><option value="">— sin voto —</option>${t.candidates.map((c) => `<option value="${c.id}" ${t.votes[j.id] === c.id ? 'selected' : ''}>${FV.esc(FV.fullName(c))}</option>`).join('')}</select></div>`).join('')}</div></div>`;
+          return `<div class="cand"><span class="av">${FV.photoHtml(c)}</span><span class="grow">${FV.esc(FV.fullName(c))}<small>${voters.length ? 'Votos: ' + voters.map(FV.esc).join(', ') : 'Sin votos'}</small></span><button class="btn ghost sm" data-decide="${t.key}" data-pid="${c.id}">Decidir</button></div>`;
+        }).join('')}</div></div>`;
     }
-    const wl = (list, g) => list.map((w) => `<div class="wline"><span class="medal p${w.position}">${w.position}</span><span class="grow">${FV.esc(FV.fullName(w))}${w.tiebreak ? ' <small class="muted">(desempate)</small>' : ''}</span><b>${w.pct.toFixed(1)}%</b>${w.tiebreak ? `<button class="reopen" data-reopen="${g}" data-pos="${w.position}" title="Los jurados votan de nuevo">↺ Reabrir</button>` : ''}</div>`).join('') || '<p class="muted small">Pendiente</p>';
-    html += `<div class="winners2"><div class="wbox"><h4 style="color:#ffb3bd">Voz Femenina</h4>${wl(R.winners.F, 'F')}</div><div class="wbox"><h4 style="color:#bcd0ff">Voz Masculina</h4>${wl(R.winners.M, 'M')}</div></div>`;
+    const wl = (list) => list.map((w) => `<div class="wline"><span class="medal p${w.position}">${w.position}</span><span class="grow">${FV.esc(FV.fullName(w))}${w.tiebreak ? ' <small class="muted">(desempate)</small>' : ''}</span><b>${w.pct.toFixed(1)}%</b></div>`).join('') || '<p class="muted small">Pendiente</p>';
+    html += `<div class="winners2"><div class="wbox"><h4 style="color:#ffb3bd">Voz Femenina</h4>${wl(R.winners.F)}</div><div class="wbox"><h4 style="color:#bcd0ff">Voz Masculina</h4>${wl(R.winners.M)}</div></div>`;
     if (R.allResolved) {
       html += `<hr class="sep"><h3 class="h3">Aprobación del jurado (${R.approvedBy.length}/${J.judges.length})</h3>`;
       html += J.judges.map((j) => {
@@ -434,13 +431,7 @@
     $('#reApprove').onclick = async () => { if (await confirmBox('Nueva aprobación', 'Todos los jurados deberán aprobar de nuevo a los ganadores.', 'Solicitar')) api('/jury/approvals/reset', {}); };
     $('#clearDec').onclick = async () => { if (await confirmBox('Anular desempates', 'Se borrarán todas las decisiones de desempate; los jurados votarán de nuevo.', 'Anular')) api('/jury/decisions/clear', {}); };
   }
-  $('#delib').addEventListener('change', (e) => {
-    const sel = e.target.closest('[data-tievote]'); if (!sel) return;
-    api('/jury/tievote', { key: sel.dataset.tievote, judgeId: sel.dataset.judge, participantId: sel.value || null }, 'PUT').then(() => FV.toast('Voto de desempate modificado', 'ok')).catch(() => renderDelib());
-  });
   $('#delib').addEventListener('click', async (e) => {
-    const ro = e.target.closest('[data-reopen]');
-    if (ro) { if (await confirmBox('Reabrir desempate', 'Se anula esta decisión (y las posteriores de la categoría) y los jurados votan de nuevo.', 'Reabrir')) api('/jury/decisions/reopen', { genero: ro.dataset.reopen, position: +ro.dataset.pos }); return; }
     const b = e.target.closest('[data-decide]'); if (!b) return;
     const p = A.participantsFull.find((x) => x.id === b.dataset.pid);
     if (await confirmBox('Decisión del administrador', `<b>${FV.esc(FV.fullName(p))}</b> ocupará este puesto. Quedará registrado en el historial.`, 'Confirmar')) api('/jury/decide', { key: b.dataset.decide, participantId: b.dataset.pid });
@@ -512,41 +503,6 @@
   }
   const toggle = (id, key) => ($(id).onchange = (e) => api('/settings', { [key]: e.target.checked }).then(() => FV.toast('Guardado', 'ok')));
   toggle('#sComments', 'commentsEnabled'); toggle('#sPremod', 'commentsPremod'); toggle('#sLikes', 'likesEnabled'); toggle('#sPhotos', 'showPhotos'); toggle('#sStrict', 'strictMode');
-
-  /* ================= mensajes de la pantalla de gala ================= */
-  function renderScreenTexts() {
-    const box = $('#stGroups'); if (!A.screenTexts) return;
-    if (box.contains(document.activeElement) && document.activeElement.tagName === 'INPUT') return; // no interrumpir al escribir
-    $('#stOpen').href = screenLink();
-    const { defs, groups, hide, overrides } = A.screenTexts;
-    box.innerHTML = Object.entries(groups).map(([g, name]) => {
-      const rows = defs.filter((d) => d.group === g);
-      const mod = rows.filter((d) => overrides[d.key] !== undefined).length;
-      return `<details class="stgroup" ${g === 'premiacion' ? 'open' : ''}><summary>${FV.esc(name)}<span class="cnt">${rows.length} mensaje${rows.length === 1 ? '' : 's'}${mod ? ` · <b>${mod} editados</b>` : ''}</span></summary>
-        ${rows.map((d) => { const o = overrides[d.key]; const hidden = o === hide; return `<div class="strow ${o !== undefined ? 'mod' : ''}" data-k="${d.key}"><span>${FV.esc(d.label)}</span>
-          <input type="text" maxlength="200" value="${FV.esc(hidden ? '' : (o !== undefined ? o : d.def))}" placeholder="${FV.esc(d.def)}" data-def="${FV.esc(d.def)}" ${hidden ? 'disabled' : ''}>
-          <label class="chk"><input type="checkbox" data-hide ${hidden ? 'checked' : ''}> Ocultar</label><button type="button" data-restore title="Restaurar el original">↺</button></div>`; }).join('')}</details>`;
-    }).join('');
-  }
-  $('#stGroups').addEventListener('change', (e) => {
-    if (!e.target.matches('[data-hide]')) return;
-    const row = e.target.closest('.strow'), inp = row.querySelector('input[type=text]');
-    inp.disabled = e.target.checked;
-  });
-  $('#stGroups').addEventListener('click', (e) => {
-    if (!e.target.closest('[data-restore]')) return;
-    const row = e.target.closest('.strow'), inp = row.querySelector('input[type=text]');
-    inp.value = inp.dataset.def; inp.disabled = false; row.querySelector('[data-hide]').checked = false;
-  });
-  $('#stSave').onclick = () => {
-    const texts = {};
-    $$('#stGroups .strow').forEach((row) => {
-      const inp = row.querySelector('input[type=text]');
-      texts[row.dataset.k] = row.querySelector('[data-hide]').checked ? A.screenTexts.hide : (inp.value.trim() === '' || inp.value.trim() === inp.dataset.def ? null : inp.value);
-    });
-    api('/screen-texts', { texts }, 'PUT').then(() => { FV.toast('Mensajes guardados: la pantalla se actualizó', 'ok'); document.activeElement.blur(); renderScreenTexts(); });
-  };
-  $('#stReset').onclick = async () => { if (await confirmBox('Restaurar mensajes', 'Todos los mensajes de la pantalla de gala volverán a su texto original.', 'Restaurar')) api('/screen-texts', { reset: true }, 'PUT').then(() => FV.toast('Mensajes restaurados', 'ok')); };
 
   /* ================= página, video y QR ================= */
   function renderSettings() {

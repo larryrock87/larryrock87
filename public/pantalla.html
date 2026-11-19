@@ -244,6 +244,7 @@
     .aw-card .sc { display: inline-flex; gap: 14px; align-items: baseline; padding: 12px 34px; border-radius: 999px; background: rgba(5,12,27,.6); box-shadow: inset 0 0 0 1.5px rgba(214,178,94,.45); font-size: 26px; font-weight: 700; }
     .aw-card .sc b { font-family: var(--font-display); font-size: 38px; color: var(--gold-200); }
     .aw-card.none .n { color: var(--silver-500); }
+    .aw-card .tb { margin-top: 14px; font-size: 20px; letter-spacing: .14em; color: var(--ve-yellow); font-weight: 700; text-transform: uppercase; }
     .finals { position: absolute; left: 40px; right: 40px; top: 210px; bottom: 0; display: flex; gap: 60px; }
     .fpod { flex: 1; display: flex; flex-direction: column; }
     .fpod .cat { text-align: center; font-size: 24px; letter-spacing: .4em; font-weight: 800; margin-bottom: 10px; }
@@ -286,8 +287,8 @@
         </div>
         <div class="qr-card panel">
           <div class="qr"><img id="qrBig" alt="Código QR de votación"></div>
-          <h2 class="gold-text" data-t="qr_title"></h2>
-          <p data-t="qr_sub"></p>
+          <h2 class="gold-text">Escanea y vota</h2>
+          <p>Apunta la cámara de tu teléfono al código</p>
           <div class="url" id="urlText"></div>
           <div class="state" id="esperaState"></div>
         </div>
@@ -298,7 +299,7 @@
       <section class="scene" id="s-participantes">
         <div class="topbar">
           <img class="logo" src="/img/logo-256.webp" alt="">
-          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span data-t="parts_sub"></span><div class="tricolor-line"></div></div></div>
+          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span>NUESTROS PARTICIPANTES</span><div class="tricolor-line"></div></div></div>
         </div>
         <div class="gallery" id="gallery"></div>
       </section>
@@ -307,19 +308,19 @@
       <section class="scene" id="s-vivo">
         <div class="topbar">
           <img class="logo" src="/img/logo-256.webp" alt="">
-          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span data-t="live_sub"></span><div class="tricolor-line"></div></div></div>
+          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span>VOZ DE LA AUDIENCIA · EN VIVO</span><div class="tricolor-line"></div></div></div>
           <div class="right">
-            <span class="live" id="liveBadge"><i></i><span></span></span>
-            <div class="count-box"><div class="lbl" id="clockLbl"></div><div class="val" id="clockVal">--:--</div></div>
+            <span class="live" id="liveBadge"><i></i><span>EN VIVO</span></span>
+            <div class="count-box"><div class="lbl" id="clockLbl">TIEMPO RESTANTE</div><div class="val" id="clockVal">--:--</div></div>
           </div>
         </div>
         <div class="side">
           <div class="leader panel" id="leader"></div>
           <div class="stats">
-            <div class="stat panel"><div class="lbl" data-t="stat_votes"></div><div class="v gold-text" id="stTotal">0</div></div>
-            <div class="stat panel"><div class="lbl" data-t="stat_rate"></div><div class="v gold-text" id="stRate">0</div></div>
+            <div class="stat panel"><div class="lbl">VOTOS</div><div class="v gold-text" id="stTotal">0</div></div>
+            <div class="stat panel"><div class="lbl">VOTOS / MIN</div><div class="v gold-text" id="stRate">0</div></div>
           </div>
-          <div class="qr-mini panel"><img id="qrMini" alt=""><div><b class="gold-text" data-t="mini_title"></b><span data-t="mini_sub"></span></div></div>
+          <div class="qr-mini panel"><img id="qrMini" alt=""><div><b class="gold-text">¡Vota ya!</b><span>Escanea el código con tu teléfono y elige a tu favorito.</span></div></div>
         </div>
         <div class="board" id="board"></div>
       </section>
@@ -327,7 +328,7 @@
       <!-- GANADOR -->
       <section class="scene" id="s-ganador">
         <div class="spot l"></div><div class="spot r"></div>
-        <div class="reveal-pre" id="pre"><div><h2 class="gold-text" data-t="win_pre"></h2><div class="cd gold-text" id="cd"></div></div></div>
+        <div class="reveal-pre" id="pre"><div><h2 class="gold-text">La Voz de la Audiencia es…</h2><div class="cd gold-text" id="cd"></div></div></div>
         <div class="winner" id="winner"></div>
       </section>
 
@@ -335,7 +336,7 @@
       <section class="scene" id="s-podio">
         <div class="topbar">
           <img class="logo" src="/img/logo-256.webp" alt="">
-          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span data-t="podium_sub"></span><div class="tricolor-line"></div></div></div>
+          <div class="ttl"><h1 class="gold-text t-title"></h1><div class="sub"><span>PODIO · VOZ DE LA AUDIENCIA</span><div class="tricolor-line"></div></div></div>
         </div>
         <div class="podium" id="podium"></div>
       </section>
@@ -413,10 +414,6 @@
 
     /* ---- utilidades ---- */
     const votingUrl = () => (S && S.publicUrl) || (location.origin + '/');
-    // Mensajes editables por el administrador (el servidor los entrega ya resueltos)
-    const T = (k) => (S && S.texts && S.texts[k]) || '';
-    const applyTexts = () => document.querySelectorAll('[data-t]').forEach((el) => { const t = T(el.dataset.t); if (el.textContent !== t) el.textContent = t; });
-    const unit = (n) => (n === 1 ? T('unit_vote') : T('unit_votes'));
     const titleSet = () => document.querySelectorAll('.t-title').forEach((el) => (el.textContent = `${S.title} ${S.year}`));
 
     function setQR() {
@@ -435,9 +432,8 @@
     function renderEspera() {
       setQR();
       const st = S.voting.status;
-      const badge = (cls, key) => { const el = document.createElement('span'); el.className = 'live' + cls; el.innerHTML = '<i></i>'; el.appendChild(document.createTextNode(T(key))); return el; };
-      $('#esperaState').replaceChildren(st === 'open' ? badge('', 'badge_open') : st === 'closed' ? badge(' off', 'badge_closed') : badge(' off', 'badge_idle'));
-      $('#esperaTag').textContent = st === 'open' ? T('espera_open') : st === 'closed' ? T('espera_closed') : T('espera_idle');
+      $('#esperaState').innerHTML = st === 'open' ? `<span class="live"><i></i>VOTACIÓN ABIERTA</span>` : st === 'closed' ? `<span class="live off"><i></i>VOTACIÓN CERRADA</span>` : `<span class="live off"><i></i>PRÓXIMAMENTE</span>`;
+      $('#esperaTag').textContent = st === 'open' ? '¡Vota por tu favorito!' : st === 'closed' ? '¡Gracias por votar!' : `${S.title}`;
       $('#esperaTag').style.fontSize = st === 'idle' || st === 'scheduled' ? '34px' : '';
       const ps = S.participants.filter((p) => !p.tribute);
       const key = ps.map((p) => p.id + p.photo + p.nombre).join();
@@ -467,7 +463,7 @@
       g.style.gridTemplateColumns = `repeat(${best.c}, ${w}px)`;
       g.style.gridAutoRows = h + 'px';
       g.style.fontSize = Math.max(13, Math.min(30, w / 9)) + 'px';
-      g.innerHTML = ps.map((p, i) => `<div class="pcard ${p.tribute ? 'trib' : ''}" style="animation-delay:${i * 70}ms">${FV.photoHtml(p)}<span class="no">${p.number}</span>${p.tribute ? `<span class="tribtag">${FV.esc(T('trib_ribbon'))}</span>` : ''}<div class="meta">${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n">${FV.esc(p.nombre)}<br>${FV.esc(p.apellidos)}</div></div></div>`).join('');
+      g.innerHTML = ps.map((p, i) => `<div class="pcard ${p.tribute ? 'trib' : ''}" style="animation-delay:${i * 70}ms">${FV.photoHtml(p)}<span class="no">${p.number}</span>${p.tribute ? '<span class="tribtag">IN MEMORIAM</span>' : ''}<div class="meta">${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n">${FV.esc(p.nombre)}<br>${FV.esc(p.apellidos)}</div></div></div>`).join('');
       if (mode === 'participantes') { const s = $('#s-participantes'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on'); }
     }
 
@@ -485,7 +481,7 @@
       if (!R) return;
       const board = $('#board');
       const list = R.ranking; const n = list.length;
-      if (!n) { board.innerHTML = `<div class="board-empty">${FV.esc(T('board_empty'))}</div>`; return; }
+      if (!n) { board.innerHTML = `<div class="board-empty">Aún no hay participantes</div>`; return; }
       const L = layoutBoard(n);
       board.classList.toggle('two', L.cols > 1);
       const size = Math.max(16, Math.min(30, L.rowH * .26));
@@ -516,7 +512,7 @@
         FV.tweenNumber(el.querySelector('.p'), p.pct, { decimals: 1, suffix: '%' });
         const c = el.querySelector('.c');
         c.style.display = S.screen.showCounts ? '' : 'none';
-        c.textContent = `${p.votes} ${unit(p.votes)}`;
+        c.textContent = `${p.votes} ${p.votes === 1 ? 'voto' : 'votos'}`;
         const before = prevVotes[p.id];
         if (before !== undefined && p.votes > before && mode === 'vivo') {
           el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
@@ -534,13 +530,13 @@
       const tie = list.length > 1 && list[1].votes === top.votes && top.votes > 0;
       const ld = $('#leader');
       if (top.votes === 0) {
-        ld.innerHTML = `<div class="lbl">${FV.esc(T('leader_waiting'))}</div><div class="pic"><img src="/img/logo-256.webp" alt=""></div><div class="n gold-text">${FV.esc(T('leader_waiting_title'))}</div><div class="g">${FV.esc(T('leader_waiting_sub'))}</div>`;
+        ld.innerHTML = `<div class="lbl">ESPERANDO VOTOS</div><div class="pic"><img src="/img/logo-256.webp" alt=""></div><div class="n gold-text">¡Vota ahora!</div><div class="g">Escanea el código QR</div>`;
         leaderId = null;
       } else {
         const changed = leaderId && leaderId !== top.id;
         if (ld.dataset.k !== top.id + top.photo + tie) {
           ld.dataset.k = top.id + top.photo + tie;
-          ld.innerHTML = `<span class="crown">👑</span><div class="lbl">${FV.esc(tie ? T('leader_tie') : T('leader_label'))}</div><div class="pic">${FV.photoHtml(top)}</div><div class="g">${FV.esc(top.grado || '')}</div><div class="n">${FV.esc(FV.fullName(top))}</div><div class="pct gold-text" id="ldPct">0%</div>`;
+          ld.innerHTML = `<span class="crown">👑</span><div class="lbl">${tie ? 'EMPATE EN EL PRIMER LUGAR' : 'VA A LA CABEZA'}</div><div class="pic">${FV.photoHtml(top)}</div><div class="g">${FV.esc(top.grado || '')}</div><div class="n">${FV.esc(FV.fullName(top))}</div><div class="pct gold-text" id="ldPct">0%</div>`;
           if (changed) { ld.classList.remove('swap'); void ld.offsetWidth; ld.classList.add('swap'); }
         }
         const lp = $('#ldPct'); if (lp) FV.tweenNumber(lp, top.pct, { decimals: 1, suffix: '%' });
@@ -560,15 +556,15 @@
       const v = S.voting, lbl = $('#clockLbl'), val = $('#clockVal'), badge = $('#liveBadge');
       if (v.status === 'open' && v.endsAt) {
         const left = v.endsAt - FV.now();
-        lbl.textContent = T('clock_left'); val.textContent = FV.fmtTime(left); val.classList.toggle('urgent', left < 60000);
-        badge.className = 'live'; badge.lastElementChild.textContent = T('live_badge');
+        lbl.textContent = 'TIEMPO RESTANTE'; val.textContent = FV.fmtTime(left); val.classList.toggle('urgent', left < 60000);
+        badge.className = 'live'; badge.lastElementChild.textContent = 'EN VIVO';
       } else if (v.status === 'scheduled' && v.startsAt) {
-        lbl.textContent = T('clock_starts'); val.textContent = FV.fmtTime(v.startsAt - FV.now()); val.classList.remove('urgent');
-        badge.className = 'live off'; badge.lastElementChild.textContent = T('badge_scheduled');
+        lbl.textContent = 'INICIA EN'; val.textContent = FV.fmtTime(v.startsAt - FV.now()); val.classList.remove('urgent');
+        badge.className = 'live off'; badge.lastElementChild.textContent = 'PROGRAMADA';
       } else {
-        lbl.textContent = T('clock_idle'); val.textContent = v.status === 'closed' ? T('clock_closed') : T('badge_wait'); val.classList.remove('urgent');
+        lbl.textContent = 'VOTACIÓN'; val.textContent = v.status === 'closed' ? 'CERRADA' : 'EN ESPERA'; val.classList.remove('urgent');
         val.style.fontSize = '34px';
-        badge.className = 'live off'; badge.lastElementChild.textContent = v.status === 'closed' ? T('badge_finished') : T('badge_wait');
+        badge.className = 'live off'; badge.lastElementChild.textContent = v.status === 'closed' ? 'FINALIZADA' : 'EN ESPERA';
         return;
       }
       val.style.fontSize = '';
@@ -590,13 +586,13 @@
     }
     function renderWinner() {
       const ws = winners(), win = $('#winner');
-      if (!ws.length || ws[0].votes === 0) { win.innerHTML = `<div><div class="kick">${FV.esc(T('win_none'))}</div></div>`; return; }
-      const res = (p) => `<div class="res panel"><span><b>${p.pct.toFixed(1)}%</b>${FV.esc(T('win_pct'))}</span>${S.screen.showCounts ? `<span><b>${p.votes}</b>${FV.esc(unit(p.votes))}</span>` : ''}</div>`;
+      if (!ws.length || ws[0].votes === 0) { win.innerHTML = `<div><div class="kick">SIN VOTOS REGISTRADOS</div></div>`; return; }
+      const res = (p) => `<div class="res panel"><span><b>${p.pct.toFixed(1)}%</b>de los votos</span>${S.screen.showCounts ? `<span><b>${p.votes}</b>${p.votes === 1 ? 'voto' : 'votos'}</span>` : ''}</div>`;
       if (ws.length === 1) {
         const p = ws[0];
-        win.innerHTML = `<div><div class="kick">${FV.esc(T('win_kick'))}</div><div class="medal"><div class="rays"></div><div class="ring"></div><div class="ph">${FV.photoHtml(p)}</div></div>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n gold-text">${FV.esc(FV.fullName(p))}</div>${res(p)}</div>`;
+        win.innerHTML = `<div><div class="kick">★ VOZ DE LA AUDIENCIA · ${FV.esc(S.year)} ★</div><div class="medal"><div class="rays"></div><div class="ring"></div><div class="ph">${FV.photoHtml(p)}</div></div>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n gold-text">${FV.esc(FV.fullName(p))}</div>${res(p)}</div>`;
       } else {
-        win.innerHTML = `<div><div class="kick">${FV.esc(T('win_tie_kick'))}</div><div class="multi">${ws.slice(0, 4).map((p) => `<div><div class="medal"><div class="ring"></div><div class="ph">${FV.photoHtml(p)}</div></div></div>`).join('')}</div><div class="n gold-text">${ws.map((p) => FV.esc(FV.fullName(p))).join(' · ')}</div>${res(ws[0])}</div>`;
+        win.innerHTML = `<div><div class="kick">🏆 ¡EMPATE EN EL PRIMER LUGAR! 🏆</div><div class="multi">${ws.slice(0, 4).map((p) => `<div><div class="medal"><div class="ring"></div><div class="ph">${FV.photoHtml(p)}</div></div></div>`).join('')}</div><div class="n gold-text">${ws.map((p) => FV.esc(FV.fullName(p))).join(' · ')}</div>${res(ws[0])}</div>`;
       }
     }
 
@@ -604,7 +600,7 @@
     function renderPodium() {
       const top = (R ? R.ranking : []).slice(0, 3);
       const order = [[top[1], 'p2', 2], [top[0], 'p1', 1], [top[2], 'p3', 3]];
-      $('#podium').innerHTML = order.map(([p, cls, n]) => p ? `<div class="pod ${cls}"><div class="who"><div class="ph">${FV.photoHtml(p)}</div>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n">${FV.esc(FV.fullName(p))}</div><div class="p">${p.pct.toFixed(1)}%${S.screen.showCounts ? ` · ${p.votes} ${FV.esc(unit(p.votes))}` : ''}</div></div><div class="block">${n}</div></div>` : '').join('');
+      $('#podium').innerHTML = order.map(([p, cls, n]) => p ? `<div class="pod ${cls}"><div class="who"><div class="ph">${FV.photoHtml(p)}</div>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}<div class="n">${FV.esc(FV.fullName(p))}</div><div class="p">${p.pct.toFixed(1)}%${S.screen.showCounts ? ` · ${p.votes} votos` : ''}</div></div><div class="block">${n}</div></div>` : '').join('');
       const s = $('#s-podio'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on');
       revealTimers.push(setTimeout(() => { cymbal(); FV.confetti({ duration: 5000, count: 220 }); }, 2400));
     }
@@ -614,9 +610,9 @@
       const ts = S.participants.filter((p) => p.tribute);
       const multi = ts.length > 1;
       $('#tribWrap').innerHTML = ts.slice(0, 3).map((p) => `<div class="trib ${multi ? 'multi' : ''}">
-        <div class="frame">${FV.photoHtml(p)}<span class="rib">${FV.esc(T('trib_ribbon'))}</span></div>
-        <div class="txt"><div class="kick">${FV.esc(T('trib_kick'))}</div><h2 class="gold-text">${FV.esc(FV.fullName(p))}</h2>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}
-        ${!multi ? `<div class="d">${FV.esc(p.descripcion || T('trib_default'))}</div>` : ''}</div></div>`).join('');
+        <div class="frame">${FV.photoHtml(p)}<span class="rib">IN MEMORIAM</span></div>
+        <div class="txt"><div class="kick">HOMENAJE PÓSTUMO</div><h2 class="gold-text">${FV.esc(FV.fullName(p))}</h2>${p.grado ? `<div class="g">${FV.esc(p.grado)}</div>` : ''}
+        ${!multi ? `<div class="d">${FV.esc(p.descripcion || 'Su voz y su servicio permanecen en nuestra memoria. Este festival también le pertenece.')}</div>` : ''}</div></div>`).join('');
       const s = $('#s-homenaje'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on');
     }
 
@@ -630,11 +626,11 @@
     }
 
     /* ---- PREMIACIÓN DEL JURADO ---- */
-    const PLACE = (n) => T('aw_p' + n);
-    const GN = (g) => T('aw_' + g);
+    const PLACE = { 1: 'Primer Lugar', 2: 'Segundo Lugar', 3: 'Tercer Lugar' };
+    const GN = { F: 'VOZ FEMENINA', M: 'VOZ MASCULINA' };
     function awCard(g, w, n) {
-      if (!w) return `<div class="aw-card ${g} p${n} none"><div class="cat">${FV.esc(GN(g))}</div><div class="mph"><div class="ring"></div><div class="ph"><div class="avatar-fallback">—</div></div></div><div class="n">${FV.esc(T('aw_empty'))}</div></div>`;
-      return `<div class="aw-card ${g} p${n}"><div class="cat">${FV.esc(GN(g))}</div><div class="mph">${n === 1 ? '<div class="rays"></div>' : ''}<div class="ring"></div><div class="ph">${FV.photoHtml(w)}</div><span class="mnum">${n}</span></div>${w.grado ? `<div class="g">${FV.esc(w.grado)}</div>` : ''}<div class="n gold-text">${FV.esc(FV.fullName(w))}</div><div class="sc"><b>${w.pct.toFixed(1)}%</b>${FV.esc(T('aw_score'))}</div></div>`;
+      if (!w) return `<div class="aw-card ${g} p${n} none"><div class="cat">${GN[g]}</div><div class="mph"><div class="ring"></div><div class="ph"><div class="avatar-fallback">—</div></div></div><div class="n">Puesto desierto</div></div>`;
+      return `<div class="aw-card ${g} p${n}"><div class="cat">${GN[g]}</div><div class="mph">${n === 1 ? '<div class="rays"></div>' : ''}<div class="ring"></div><div class="ph">${FV.photoHtml(w)}</div><span class="mnum">${n}</span></div>${w.grado ? `<div class="g">${FV.esc(w.grado)}</div>` : ''}<div class="n gold-text">${FV.esc(FV.fullName(w))}</div><div class="sc"><b>${w.pct.toFixed(1)}%</b>de la puntuación del jurado</div>${w.tiebreak ? '<div class="tb">★ Definido por desempate del jurado</div>' : ''}</div>`;
     }
     function runAward() {
       revealTimers.forEach(clearTimeout); revealTimers = [];
@@ -642,13 +638,13 @@
       const box = $('#award'), step = A.step;
       const at = (g, n) => (A.winners[g] || []).find((w) => w.position === n);
       if (step === 0) {
-        const pod = (g) => `<div class="fpod ${g}"><div class="cat">${FV.esc(GN(g))}</div><div class="row3">${[[2, 'p2'], [1, 'p1'], [3, 'p3']].map(([n, cls]) => { const w = at(g, n); return w ? `<div class="pod ${cls}"><div class="who"><div class="ph">${FV.photoHtml(w)}</div>${w.grado ? `<div class="g">${FV.esc(w.grado)}</div>` : ''}<div class="n">${FV.esc(FV.fullName(w))}</div><div class="p">${w.pct.toFixed(1)}%</div></div><div class="block">${n}</div></div>` : `<div class="pod ${cls}"></div>`; }).join('')}</div></div>`;
-        box.innerHTML = `<div class="aw-title"><div class="kick">${FV.esc(T('aw_kick'))}</div><h2 class="gold-text in">${FV.esc(T('aw_final'))}</h2></div><div class="finals">${pod('F')}${pod('M')}</div>`;
+        const pod = (g) => `<div class="fpod ${g}"><div class="cat">${GN[g]}</div><div class="row3">${[[2, 'p2'], [1, 'p1'], [3, 'p3']].map(([n, cls]) => { const w = at(g, n); return w ? `<div class="pod ${cls}"><div class="who"><div class="ph">${FV.photoHtml(w)}</div>${w.grado ? `<div class="g">${FV.esc(w.grado)}</div>` : ''}<div class="n">${FV.esc(FV.fullName(w))}</div><div class="p">${w.pct.toFixed(1)}%${w.tiebreak ? ' ★' : ''}</div></div><div class="block">${n}</div></div>` : `<div class="pod ${cls}"></div>`; }).join('')}</div></div>`;
+        box.innerHTML = `<div class="aw-title"><div class="kick">PREMIACIÓN DEL JURADO · ${FV.esc(S.year)}</div><h2 class="gold-text in">Ganadores</h2></div><div class="finals">${pod('F')}${pod('M')}</div>`;
         const s = $('#s-premiacion'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on');
         revealTimers.push(setTimeout(() => { cymbal(); chord(); FV.confetti({ duration: 8000, count: 320 }); }, 2400));
         return;
       }
-      box.innerHTML = `<div class="aw-title"><div class="kick">${FV.esc(T('aw_kick'))}</div><h2 class="gold-text" id="awT">${FV.esc(PLACE(step))}</h2></div><div class="aw-cards">${awCard('F', at('F', step), step)}${awCard('M', at('M', step), step)}</div>`;
+      box.innerHTML = `<div class="aw-title"><div class="kick">PREMIACIÓN DEL JURADO · ${FV.esc(S.year)}</div><h2 class="gold-text" id="awT">${PLACE[step]}</h2></div><div class="aw-cards">${awCard('F', at('F', step), step)}${awCard('M', at('M', step), step)}</div>`;
       revealTimers.push(setTimeout(() => $('#awT').classList.add('in'), 200));
       drumroll(3.4);
       revealTimers.push(setTimeout(() => {
@@ -662,7 +658,7 @@
     /* ---- render general ---- */
     function render() {
       if (!S) return;
-      titleSet(); applyTexts();
+      titleSet();
       const m = S.screen.mode;
       const reveal = S.screen.revealAt !== lastReveal;
       const prevMode = mode;
