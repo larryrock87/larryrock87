@@ -249,9 +249,11 @@ function juryStateFor(judgeId) {
   };
 }
 
+// La pantalla de gala no recibe marcas de desempate: solo puesto, participante y porcentaje.
 function awardsForScreen() {
   const R = juryResults();
-  return { step: db.screen.awardStep, winners: R.winners, allApproved: R.allApproved };
+  const clean = (list) => list.map(({ tiebreak, total, ...w }) => w);
+  return { step: db.screen.awardStep, winners: { F: clean(R.winners.F), M: clean(R.winners.M) }, allApproved: R.allApproved };
 }
 
 /* --- Comunidad --- */
