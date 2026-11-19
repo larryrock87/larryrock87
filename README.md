@@ -76,6 +76,20 @@ Variables opcionales:
 
 Pruebas automáticas de la lógica del jurado y del filtro de comentarios: `npm test`.
 
+## 📥 Carga masiva de participantes
+
+En **Participantes → ⬆ Carga masiva (.json)** se sube un archivo con varios participantes a la vez (con foto incluida). Formato:
+
+```json
+{ "participants": [
+  { "grado": "Capitán de Corbeta", "nombre": "Ana", "apellidos": "Pérez", "genero": "F",
+    "cancion": "Alma Llanera", "descripcion": "Texto opcional", "tribute": false,
+    "photo": "data:image/jpeg;base64,..." }
+] }
+```
+
+Los que ya existan (mismo nombre y apellidos) se omiten, así que repetir la carga no duplica.
+
 ## 💾 Respaldo y restauración
 
 En el panel, pestaña **Página y QR → Seguridad y respaldo**:

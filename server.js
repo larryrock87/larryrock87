@@ -816,6 +816,29 @@ admin.delete('/participants/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+/* --- carga masiva: varios participantes (con foto) en un solo archivo --- */
+admin.post('/participants/import', async (req, res) => {
+  const list = Array.isArray(req.body?.participants) ? req.body.participants : null;
+  if (!list || !list.length) return res.status(400).json({ error: 'El archivo no contiene participantes.' });
+  if (list.length > MAX_PARTICIPANTS) return res.status(400).json({ error: `El archivo tiene más de ${MAX_PARTICIPANTS} participantes.` });
+  const created = [], skipped = [], errors = [];
+  const same = (p, n, a) => `${p.nombre} ${p.apellidos}`.toLowerCase() === `${n} ${a}`.toLowerCase();
+  for (const b of list) {
+    const nombre = clean(b?.nombre), apellidos = clean(b?.apellidos);
+    if (!nombre || !apellidos) { errors.push('Una fila no tiene nombre o apellidos.'); continue; }
+    if (db.participants.some((p) => same(p, nombre, apellidos))) { skipped.push(`${nombre} ${apellidos}`); continue; } // ya cargado: no se duplica
+    if (db.participants.length >= MAX_PARTICIPANTS) { errors.push(`${nombre} ${apellidos}: se alcanzó el máximo de ${MAX_PARTICIPANTS}.`); continue; }
+    const id = rid(6);
+    let photo = null;
+    try { photo = b.photo ? await savePhoto(b.photo, id) : null; } catch (e) { errors.push(`${nombre} ${apellidos}: ${e.message}`); continue; }
+    const order = db.participants.reduce((m, p) => Math.max(m, p.order), 0) + 1;
+    db.participants.push({ id, grado: '', nombre: '', apellidos: '', genero: '', cancion: '', descripcion: '', photo, audio: null, order, tribute: false, inEvaluation: false, ...participantFields(b) });
+    created.push(`${nombre} ${apellidos}`);
+  }
+  log('participante', 'Administrador', `Carga masiva: ${created.length} participantes agregados${skipped.length ? `, ${skipped.length} ya existían` : ''}${errors.length ? `, ${errors.length} con error` : ''}.`);
+  save(); broadcastAll();
+  res.json({ ok: true, created: created.length, names: created, skipped, errors });
+});
 admin.post('/participants/reorder', (req, res) => {
   const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
   ids.forEach((id, i) => { const p = db.participants.find((x) => x.id === id); if (p) p.order = i + 1; });

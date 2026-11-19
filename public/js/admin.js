@@ -289,6 +289,22 @@
       if (await confirmBox('Eliminar participante', `¿Eliminar a <b>${FV.esc(FV.fullName(p))}</b>? Se perderán sus votos, me gusta, comentarios y evaluaciones del jurado.`, 'Eliminar')) { api('/participants/' + id, null, 'DELETE'); if (editing === id) resetForm(); }
     }
   });
+  $('#importBtn').onclick = () => $('#importFile').click();
+  $('#importFile').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    let data;
+    try { data = JSON.parse(await f.text()); } catch { return FV.toast('El archivo no es válido (.json).', 'error'); }
+    const list = Array.isArray(data) ? data : data.participants;
+    if (!Array.isArray(list) || !list.length) return FV.toast('El archivo no contiene participantes.', 'error');
+    const names = list.map((p) => `${FV.esc(p.nombre || '')} ${FV.esc(p.apellidos || '')}`.trim()).join('<br>');
+    if (!(await confirmBox('Carga masiva', `Se agregarán <b>${list.length} participantes</b>:<br><br>${names}<br><br>Los que ya existan (mismo nombre y apellidos) se omiten.`, 'Cargar'))) return;
+    try {
+      const r = await api('/participants/import', { participants: list });
+      const extra = (r.skipped.length ? ` ${r.skipped.length} ya existían.` : '') + (r.errors.length ? ` Errores: ${r.errors.join(' · ')}` : '');
+      FV.toast(`Cargados ${r.created} participantes.${extra}`, r.errors.length ? 'error' : 'ok');
+    } catch {}
+  };
   $('#evalAll').onclick = () => api('/participants/evaluation', { inEvaluation: true }).then((r) => FV.toast(`${r.changed} participante(s) enviados a evaluación`, 'ok'));
   $('#evalNone').onclick = async () => { if (await confirmBox('Retirar de evaluación', 'Los jurados dejarán de ver a todos los participantes. Las puntuaciones ya guardadas se conservan.', 'Retirar')) api('/participants/evaluation', { inEvaluation: false }); };
 
